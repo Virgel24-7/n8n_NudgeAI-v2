@@ -1,0 +1,156 @@
+{
+  "updatedAt": "2026-06-25T09:54:12.906Z",
+  "createdAt": "2026-05-21T03:30:48.135Z",
+  "id": "b3OCuHLwF5yV7QDp",
+  "name": "Nudge Config",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b230e09a-23f1-452a-b72a-4f30804748ac",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ac3961c7-d95d-4816-88a3-5947c53116a7",
+              "name": "excelid",
+              "value": "={{ \"5AB0C5800BE9EC6%21s2bc391f334224c03bd95bfddb2df891d\" }}",
+              "type": "string"
+            },
+            {
+              "id": "867d4c35-b193-472f-a960-745500cc4f11",
+              "name": "isActualEnvironment",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "dc257fc9-8047-4bc1-8e35-8e72ef85694d",
+              "name": "agentEmail",
+              "value": "virgelraitorres@outlook.com",
+              "type": "string"
+            },
+            {
+              "id": "069611ea-0092-44cd-bb27-dd8ca174431f",
+              "name": "maxFollowUpCount",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "887fabee-82da-4540-b0f5-bf856e687ec9",
+              "name": "openPeriods",
+              "value": "[[0,12]]",
+              "type": "array"
+            },
+            {
+              "id": "fe64622c-e9cd-4396-aadf-a7efdbd015f7",
+              "name": "aiWarningText",
+              "value": "This message is generated using AI.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "31f7f0c5-fd85-4178-997a-75d8f53725d2",
+      "name": "Set Configs"
+    },
+    {
+      "parameters": {
+        "content": "Configs:\n\nexcelid - Document ID of the excel file used as database\n\nisActualEnvironment - Controls if running on actual environment(Reply on correct followup time), or test environment(immediately reply)\n\nagentEmail - Email of the AI agent (the email that detects CC or BCC)\n\nmaxFollowUpCount - Max number of follow ups to be sent before closing the issue (set to negative for infinite)\n\nopenPeriods - Use GMT-0 time. 2D Array of intervals (start, end)(inclusive) which corresponds to the time intervals the Agent is allowed to reply at (Do not reply on midnight, for example). Set to nothing for allow every time\n\naiWarningText - Text below the reply email that serves as AI warning or any other message.\n\n",
+        "height": 512,
+        "width": 464
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -240
+      ],
+      "id": "d4082d53-3056-482d-8950-f31faa51bcd0",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Configs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "a6f4ae48-a545-4460-af85-e3c003fab080",
+  "activeVersionId": "a6f4ae48-a545-4460-af85-e3c003fab080",
+  "versionCounter": 153,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2026-04-21T11:40:32.921Z",
+      "createdAt": "2026-04-21T11:40:32.921Z",
+      "id": "AdmOOQj7jhgPkkAA",
+      "name": "Nudge"
+    },
+    {
+      "updatedAt": "2026-05-21T03:23:53.811Z",
+      "createdAt": "2026-05-21T03:23:53.811Z",
+      "id": "SIdAtN2PRl4SFKyj",
+      "name": "Excel"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-06-12T11:54:16.671Z",
+      "createdAt": "2026-06-12T11:54:16.671Z",
+      "role": "workflow:owner",
+      "workflowId": "b3OCuHLwF5yV7QDp",
+      "projectId": "rRCGWY99DWwNBygs",
+      "project": {
+        "updatedAt": "2026-06-12T11:53:00.215Z",
+        "createdAt": "2026-06-12T11:51:48.599Z",
+        "id": "rRCGWY99DWwNBygs",
+        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version a6f4ae48",
+    "description": ""
+  }
+}

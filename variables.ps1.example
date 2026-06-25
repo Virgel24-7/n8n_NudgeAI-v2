@@ -1,0 +1,12 @@
+#Copy this in variables.ps1 and change values
+
+$containerName = "n8n"
+
+#Git Repository absolute location in local
+$repoLoc = "C:/path/to/this/folder"
+
+#Commit Differentiator among devices
+$deviceName = "Office"
+
+#Set to true if data is from Git
+$useGit = $false

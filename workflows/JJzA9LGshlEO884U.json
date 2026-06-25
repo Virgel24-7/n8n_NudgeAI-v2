@@ -1,0 +1,326 @@
+{
+  "updatedAt": "2026-06-25T08:34:28.736Z",
+  "createdAt": "2026-06-12T13:53:53.643Z",
+  "id": "JJzA9LGshlEO884U",
+  "name": "Nudge Check CC",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "output": "raw",
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4936dd49-0367-493b-a8de-305f5b5818f0",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nVUgPjZX7pqA3Sg2",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6lw2gHUZtHefh763",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/6lw2gHUZtHefh763",
+          "cachedResultName": "Nudge Record data"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sentDateTime": "={{ $('Microsoft Outlook Trigger').item.json.sentDateTime }}",
+            "subject": "={{ $('Microsoft Outlook Trigger').item.json.subject }}",
+            "body_content": "={{ $('Microsoft Outlook Trigger').item.json.body.content }}",
+            "id": "={{ $('Microsoft Outlook Trigger').item.json.id }}",
+            "conversationId": "={{ $('Microsoft Outlook Trigger').item.json.conversationId }}",
+            "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.toRecipients }}",
+            "sender_emailAddress_address": "={{ $('Microsoft Outlook Trigger').item.json.sender.emailAddress.address }}"
+          },
+          "matchingColumns": [
+            "sentDateTime",
+            "subject",
+            "body_content",
+            "id",
+            "conversationId",
+            "toRecipients",
+            "sender_emailAddress_address"
+          ],
+          "schema": [
+            {
+              "id": "sentDateTime",
+              "displayName": "sentDateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "body_content",
+              "displayName": "body_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversationId",
+              "displayName": "conversationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "toRecipients",
+              "displayName": "toRecipients",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sender_emailAddress_address",
+              "displayName": "sender_emailAddress_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        0
+      ],
+      "name": "Call Nudge helper record data",
+      "id": "dce35628-d9e1-4d9e-908d-167db22f37c6",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "b3OCuHLwF5yV7QDp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
+          "cachedResultName": "Nudge Config"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "a0a817f6-cbd2-4759-a163-c9a6068f15f5",
+      "name": "Call 'Nudge Config'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e44b3404-f49f-4cba-a671-fa46ef8d577d",
+              "leftValue": "={{ $json.ccList }}",
+              "rightValue": "={{ $('Call \\'Nudge Config\\'').item.json.agentEmail }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "bc4a7d44-9363-4d62-8d82-b59fd7be5dbd",
+              "leftValue": "={{ $json.bccList }}",
+              "rightValue": "={{ $('Call \\'Nudge Config\\'').item.json.agentEmail }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "7be6981d-0e32-4c67-982f-f8f5b1f0d873",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const ccObj = $('Microsoft Outlook Trigger').item.json.ccRecipients;\nconst bccObj = $('Microsoft Outlook Trigger').item.json.ccRecipients;\n\nconst ccList = ccObj.length > 0 ?\n  ccObj.map((obj) => obj.emailAddress.address): [];\n\nconst bccList = bccObj.length > 0 ?\n  bccObj.map((obj) => obj.emailAddress.address): [];\n\nreturn {ccList: ccList, bccList: bccList};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "021e9564-4e64-410a-92a2-946b1a4fb769",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call 'Nudge Config'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Nudge Config'": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Call Nudge helper record data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Microsoft Outlook Trigger": {
+      "lastTimeChecked": "2026-06-25T19:11:19.190+08:00"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "a8317152-1e9a-49a7-a50e-05c2d5e80352",
+  "activeVersionId": "a8317152-1e9a-49a7-a50e-05c2d5e80352",
+  "versionCounter": 158,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-12T13:53:53.659Z",
+      "createdAt": "2026-06-12T13:53:53.659Z",
+      "role": "workflow:owner",
+      "workflowId": "JJzA9LGshlEO884U",
+      "projectId": "rRCGWY99DWwNBygs",
+      "project": {
+        "updatedAt": "2026-06-12T11:53:00.215Z",
+        "createdAt": "2026-06-12T11:51:48.599Z",
+        "id": "rRCGWY99DWwNBygs",
+        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version a8317152",
+    "description": ""
+  }
+}

@@ -1,0 +1,660 @@
+{
+  "updatedAt": "2026-06-12T12:13:45.913Z",
+  "createdAt": "2026-04-21T07:56:29.433Z",
+  "id": "xfsV9xyR68q3ZHJb",
+  "name": "Nudge 1 Check email",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -1120
+      ],
+      "id": "00ca0441-fed3-4f90-a895-e9bd04aa0802",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "folderMessage",
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5-uwAAAgEJAAAA",
+          "mode": "list",
+          "cachedResultName": "Sent Items",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5%2FuwAAAgEJAAAA"
+        },
+        "returnAll": true,
+        "output": "raw",
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "receivedAfter": "={{ $('Get last checked').item.json.allLastCheckedAt }}"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -1120
+      ],
+      "id": "a6dfb996-b1fb-4021-949f-cca0e719accb",
+      "name": "Get sent messages after last check time",
+      "webhookId": "dd56bf94-5feb-42d9-aa4c-87cd86643c80",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nVUgPjZX7pqA3Sg2",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "getRows",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{CAAE7091-87F1-481A-AA0B-B8B1AF01214E}",
+          "mode": "list",
+          "cachedResultName": "Metadata"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{71396946-FEC4-40C7-BAE4-0927F12E22FD}",
+          "mode": "list",
+          "cachedResultName": "metadata"
+        },
+        "limit": 1,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        -1120
+      ],
+      "id": "a6c01d10-d6f4-455b-85f5-03580a3cc859",
+      "name": "Get last checked",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "fBmnjRGjcR89GAdN",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6lw2gHUZtHefh763",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/6lw2gHUZtHefh763",
+          "cachedResultName": "Nudge Record data"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sentDateTime": "={{ $json.sentDateTime }}",
+            "subject": "={{ $json.subject }}",
+            "body_content": "={{ $json.body.content }}",
+            "id": "={{ $json.id }}",
+            "conversationId": "={{ $json.conversationId }}",
+            "toRecipients": "={{ $json.toRecipients }}",
+            "sender_emailAddress_address": "={{ $json.sender.emailAddress.address }}"
+          },
+          "matchingColumns": [
+            "sentDateTime",
+            "subject",
+            "body_content",
+            "id",
+            "conversationId",
+            "toRecipients",
+            "sender_emailAddress_address"
+          ],
+          "schema": [
+            {
+              "id": "sentDateTime",
+              "displayName": "sentDateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "body_content",
+              "displayName": "body_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversationId",
+              "displayName": "conversationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "toRecipients",
+              "displayName": "toRecipients",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sender_emailAddress_address",
+              "displayName": "sender_emailAddress_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        -1312
+      ],
+      "name": "Call Nudge helper record data",
+      "id": "1baabf85-2dad-4fd2-9d78-90924c36c0c3",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "update",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{CAAE7091-87F1-481A-AA0B-B8B1AF01214E}",
+          "mode": "list",
+          "cachedResultName": "Metadata"
+        },
+        "dataMode": "autoMap",
+        "columnToMatchOn": "=id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        2496,
+        -1312
+      ],
+      "id": "db1e0110-5db6-4360-afdf-1c3e85cbba75",
+      "name": "Update all last check",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "fBmnjRGjcR89GAdN",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1152,
+        -1120
+      ],
+      "id": "78ab06fd-f65c-4126-9585-adb6454623a9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "output": "raw",
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "custom": "=conversationId eq '{{ $json.conversationId }}'"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -1120
+      ],
+      "id": "5d3dfab5-6762-4c19-ab90-6d7843e4ef77",
+      "name": "Get many messages1",
+      "webhookId": "f89cf8b2-0c29-4319-b665-297b57b35d2e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nVUgPjZX7pqA3Sg2",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "type": "code",
+        "code": "// The two items to compare are in the variables a and b\n\t// Access the fields in a.json and b.json\n\t// Return -1 if a should go before b\n\t// Return 1 if b should go before a\n\t// Return 0 if there's no difference\n\nconst fieldName = 'sentDateTime';\nreturn new Date(a.json[fieldName]) - new Date(b.json[fieldName]); // ascending\n"
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        -1120
+      ],
+      "id": "e3a96c80-fe87-4d3d-8862-28caf977a666",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.first();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        -1056
+      ],
+      "id": "4f5643db-0eb8-4573-9d19-357726b4a88f",
+      "name": "Get parent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -1312
+      ],
+      "id": "34c7e2fd-14ec-49d3-883b-339b55d09142",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cdebaa6-130c-4900-9694-433521ab12e8",
+              "name": "startDate",
+              "value": "={{ new Date().toISOString().replace(/\\.\\d{3}Z$/, 'Z') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        -1120
+      ],
+      "id": "9c66ab19-f373-42e2-8eb3-421b1ffad28b",
+      "name": "Prepare startDate"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const sentDateTime = item.json.sentDateTime;\n  const lastCheckedRaw = $('Get last checked').first().json.allLastCheckedAt;\n\n  // Try parsing lastChecked into a Date, guard against empty/invalid\n  let lastChecked = null;\n  if (lastCheckedRaw && !isNaN(Date.parse(lastCheckedRaw))) {\n    lastChecked = new Date(lastCheckedRaw);\n  }\n\n  // Condition 1: sentDateTime is after or equal to lastChecked\n  let cond1 = false;\n  if (sentDateTime && lastChecked) {\n    const sent = new Date(sentDateTime);\n    cond1 = sent >= lastChecked;\n  }\n\n  // Condition 2: sender != first recipient\n  const sender = item.json.sender?.emailAddress?.address;\n  const recipient = item.json.toRecipients?.[0]?.emailAddress?.name;\n  const cond2 = sender && recipient ? sender !== recipient : false;\n\n  // Combine conditions\n  const passesFilter = cond1 && cond2;\n\n  return {\n    json: {\n      ...item.json,\n      passesFilter\n    }\n  };\n}).filter(item => item.json.passesFilter);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -1312
+      ],
+      "id": "46f9333c-2ade-4f68-94c5-d6ce6a579f08",
+      "name": "Filter by sender and date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "80d50669-0bab-40ce-8b3f-e601f8de941e",
+              "leftValue": "={{ $json.hasChange }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2048,
+        -1312
+      ],
+      "id": "5b4c107f-73c0-4bae-84a3-163b7824c690",
+      "name": "If hasChange"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  id: 1,\n  allLastCheckedAt: $('Prepare startDate').first().json.startDate\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        -1312
+      ],
+      "id": "58aee0ca-11f1-4631-a814-bd57185bef8f",
+      "name": "Prepare allLastCheckedAt"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "b3OCuHLwF5yV7QDp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
+          "cachedResultName": "Nudge Config"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        -1120
+      ],
+      "id": "677b7792-e76b-4a74-89d5-e80fcb389875",
+      "name": "Call 'Nudge Config'"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call 'Nudge Config'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get sent messages after last check time": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get last checked": {
+      "main": [
+        [
+          {
+            "node": "Prepare startDate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Nudge helper record data": {
+      "main": [
+        [
+          {
+            "node": "If hasChange",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many messages1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages1": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Get parent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get parent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Filter by sender and date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare startDate": {
+      "main": [
+        [
+          {
+            "node": "Get sent messages after last check time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter by sender and date": {
+      "main": [
+        [
+          {
+            "node": "Call Nudge helper record data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If hasChange": {
+      "main": [
+        [
+          {
+            "node": "Prepare allLastCheckedAt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare allLastCheckedAt": {
+      "main": [
+        [
+          {
+            "node": "Update all last check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Nudge Config'": {
+      "main": [
+        [
+          {
+            "node": "Get last checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "4f681cdc-9c96-4af8-9006-37a6aefb0a68",
+  "activeVersionId": null,
+  "versionCounter": 562,
+  "triggerCount": 1,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2026-04-21T11:40:32.921Z",
+      "createdAt": "2026-04-21T11:40:32.921Z",
+      "id": "AdmOOQj7jhgPkkAA",
+      "name": "Nudge"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-06-12T11:54:16.771Z",
+      "createdAt": "2026-06-12T11:54:16.771Z",
+      "role": "workflow:owner",
+      "workflowId": "xfsV9xyR68q3ZHJb",
+      "projectId": "rRCGWY99DWwNBygs",
+      "project": {
+        "updatedAt": "2026-06-12T11:53:00.215Z",
+        "createdAt": "2026-06-12T11:51:48.599Z",
+        "id": "rRCGWY99DWwNBygs",
+        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

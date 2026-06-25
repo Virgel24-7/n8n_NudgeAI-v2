@@ -1,0 +1,392 @@
+{
+  "updatedAt": "2026-06-12T14:15:00.000Z",
+  "createdAt": "2026-05-21T02:48:50.969Z",
+  "id": "ofqIHLWeRhyk9w7J",
+  "name": "Nudge Add to or Update Email table",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "update",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Excel ID\\'').item.json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Emails"
+        },
+        "dataMode": "autoMap",
+        "columnToMatchOn": "messageId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        -240
+      ],
+      "id": "c30df2e5-dadc-4589-96f4-9a8e5b2658da",
+      "name": "Update sheet",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "oM2neqj8MXSPU2ea",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "lookup",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Excel ID\\'').item.json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Emails"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+          "mode": "list",
+          "cachedResultName": "email"
+        },
+        "lookupColumn": "messageId",
+        "lookupValue": "={{ $('Start').item.json.messageId.toString() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        -240
+      ],
+      "id": "4de46399-785d-46a2-bfbb-6338d5135bed",
+      "name": "Get original",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "oM2neqj8MXSPU2ea",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d6beb135-d7e6-46ba-b1c6-379dae066327",
+              "leftValue": "={{ $('Start').item.json.isUpdate }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        -144
+      ],
+      "id": "e4b1a466-ca15-4b3f-aad6-46c7420b0057",
+      "name": "If update"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"isUpdate\": false,\n  \"messageId\": \"123\",\n  \"conversationId\": \"\",\n  \"subject\": \"ok\",\n  \"recipient\": \"\",\n  \"sender\": \"\",\n  \"sentTime\": \"\",\n  \"status\": \"\",\n  \"shouldFollowUp\": \"\",\n  \"nextFollowUpAt\": \"\",\n  \"followUpMessage\": \"\",\n  \"repliedTime\": \"\",\n  \"followUpCount\": \"\",\n  \"requiresApproval\": \"\",\n  \"urgency\": \"\",\n  \"relationship\": \"\",\n  \"nature\": \"\",\n  \"timesensitivity\": \"\",\n  \"recommendedDelayInDays\": 0,\n  \"reason\": \"\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        -144
+      ],
+      "id": "13667b10-c5e8-4e3e-91db-dd1467216417",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "b3OCuHLwF5yV7QDp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
+          "cachedResultName": "Nudge Excel ID"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        -144
+      ],
+      "id": "84ad880e-1d26-439c-8854-611fcbe3ddf2",
+      "name": "Call 'Nudge Excel ID'"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  messageId: $('Start').item.json.messageId,\n  conversationId: $('Start').item.json.conversationId,\n  subject: $('Start').item.json.subject,\n  recipient: $('Start').item.json.recipient,\n  sender: $('Start').item.json.sender,\n  sentTime: $('Start').item.json.sentTime,\n  status: $('Start').item.json.status,\n  shouldFollowUp: $('Start').item.json.shouldFollowUp,\n  nextFollowUpAt: $('Start').item.json.nextFollowUpAt,\n  followUpMessage: $('Start').item.json.followUpMessage,\n  repliedTime: $('Start').item.json.repliedTime,\n  followUpCount: $('Start').item.json.followUpCount,\n  requiresApproval: $('Start').item.json.requiresApproval,\n  urgency: $('Start').item.json.urgency,\n  relationship: $('Start').item.json.relationship,\n  nature: $('Start').item.json.nature,\n  timesensitivity: $('Start').item.json.timesensitivity,\n  recommendedDelayInDays: $('Start').item.json.recommendedDelayInDays,\n  reason: $('Start').item.json.reason\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -48
+      ],
+      "id": "2d453031-afc4-40bf-9d28-7597c3a63888",
+      "name": "Prepare object"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  messageId: $('Start').item.json.messageId || $json.messageId,\n  conversationId: $('Start').item.json.conversationId || $json.conversationId,\n  subject: $('Start').item.json.subject || $json.subject,\n  recipient: $('Start').item.json.recipient || $json.recipient,\n  sender: $('Start').item.json.sender || $json.sender,\n  sentTime: $('Start').item.json.sentTime || $json.sentTime,\n  status: $('Start').item.json.status || $json.status,\n  shouldFollowUp: $('Start').item.json.shouldFollowUp || $json.shouldFollowUp,\n  nextFollowUpAt: $('Start').item.json.nextFollowUpAt || $json.nextFollowUpAt,\n  followUpMessage: $('Start').item.json.followUpMessage || $json.followUpMessage,\n  repliedTime: $('Start').item.json.repliedTime || $json.repliedTime,\n  followUpCount: $('Start').item.json.followUpCount || $json.followUpCount,\n  requiresApproval: $('Start').item.json.requiresApproval || $json.requiresApproval,\n  urgency: $('Start').item.json.urgency || $json.urgency,\n  relationship: $('Start').item.json.relationship || $json.relationship,\n  nature: $('Start').item.json.nature || $json.nature,\n  timesensitivity: $('Start').item.json.timesensitivity || $json.timesensitivity,\n  recommendedDelayInDays: $('Start').item.json.recommendedDelayInDays || $json.recommendedDelayInDays,\n  reason: $('Start').item.json.reason || $json.reason\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -240
+      ],
+      "id": "f9eceaef-ebe4-44e2-a22a-6dbc113fa06a",
+      "name": "Prepare object 1"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Excel ID\\'').item.json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Emails"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+          "mode": "list",
+          "cachedResultName": "email"
+        },
+        "dataMode": "autoMap",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        -48
+      ],
+      "id": "8fd13402-7621-4238-9d54-cab55f5f279c",
+      "name": "Append table",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "oM2neqj8MXSPU2ea",
+          "name": "Microsoft Excel account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Update sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Get original": {
+      "main": [
+        [
+          {
+            "node": "Prepare object 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If update": {
+      "main": [
+        [
+          {
+            "node": "Get original",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare object",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Call 'Nudge Excel ID'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Nudge Excel ID'": {
+      "main": [
+        [
+          {
+            "node": "If update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare object": {
+      "main": [
+        [
+          {
+            "node": "Append table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare object 1": {
+      "main": [
+        [
+          {
+            "node": "Update sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append table": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {
+    "Start": [
+      {
+        "json": {
+          "isUpdate": true,
+          "messageId": "123",
+          "conversationId": "",
+          "subject": "ok",
+          "recipient": "",
+          "sender": "",
+          "sentTime": "",
+          "status": "",
+          "shouldFollowUp": "",
+          "nextFollowUpAt": "",
+          "followUpMessage": "",
+          "repliedTime": "",
+          "followUpCount": "",
+          "requiresApproval": "",
+          "urgency": "",
+          "relationship": "",
+          "nature": "",
+          "timesensitivity": "",
+          "recommendedDelayInDays": 0,
+          "reason": ""
+        }
+      }
+    ]
+  },
+  "versionId": "0955eed3-a4fe-459e-9c20-abc441198abe",
+  "activeVersionId": null,
+  "versionCounter": 481,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2026-04-21T11:40:32.921Z",
+      "createdAt": "2026-04-21T11:40:32.921Z",
+      "id": "AdmOOQj7jhgPkkAA",
+      "name": "Nudge"
+    },
+    {
+      "updatedAt": "2026-05-21T03:23:53.811Z",
+      "createdAt": "2026-05-21T03:23:53.811Z",
+      "id": "SIdAtN2PRl4SFKyj",
+      "name": "Excel"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-06-12T11:54:16.712Z",
+      "createdAt": "2026-06-12T11:54:16.712Z",
+      "role": "workflow:owner",
+      "workflowId": "ofqIHLWeRhyk9w7J",
+      "projectId": "rRCGWY99DWwNBygs",
+      "project": {
+        "updatedAt": "2026-06-12T11:53:00.215Z",
+        "createdAt": "2026-06-12T11:51:48.599Z",
+        "id": "rRCGWY99DWwNBygs",
+        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
