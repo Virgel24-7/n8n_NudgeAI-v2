@@ -23,10 +23,13 @@ docker cp "${containerName}:/home/node/.n8n/backups/workflows/." $repoPath
 
 # Clean credentials from exported workflows
 $workflowFiles = Get-ChildItem -Path $repoPath -Filter *.json
-
 foreach ($file in $workflowFiles) {
-    $json = Get-Content $file.FullName -Raw | ConvertFrom-Json
+    $content = Get-Content $file.FullName -Raw
+    # Remove BOM if present
+    $content = $content.TrimStart([char]0xFEFF)
+    $json = $content | ConvertFrom-Json
 
+    # Strip credentials
     if ($json.nodes) {
         foreach ($node in $json.nodes) {
             if ($node.PSObject.Properties.Name -contains "credentials") {
@@ -35,8 +38,8 @@ foreach ($file in $workflowFiles) {
         }
     }
 
-    # Save back to file
-    $json | ConvertTo-Json -Depth 100 | Set-Content $file.FullName -Encoding UTF8
+    # Save back without BOM
+    $json | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
 }
 
 Write-Host "Credentials stripped from all workflow JSON files."
