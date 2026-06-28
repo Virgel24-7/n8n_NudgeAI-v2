@@ -1,4 +1,4 @@
-NudgeAI: Context-aware Ai-powered Email Follow up Agent
+NudgeAI: Context-aware AI-powered Email Follow up Agent
 N8N self-hosted through Docker desktop
 
 Initialization:
@@ -11,4 +11,4 @@ Initialization:
 ---
 
 NOTE: If you want to use Git to edit and sync workflows across devices, update useGit in variables.ps1 to true.
-toGIT.ps1 pushes your workflow to Git, and toN8N pulls your workflow from Git and load it in n8n.
+toGIT.ps1 pushes your workflow to current active Git, and toN8N pulls your workflow from Git and load it in n8n.

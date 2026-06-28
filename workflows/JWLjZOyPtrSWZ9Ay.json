@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-06-25T11:15:18.958Z",
+  "updatedAt": "2026-06-28T06:22:09.013Z",
   "createdAt": "2026-04-21T08:41:00.656Z",
   "id": "JWLjZOyPtrSWZ9Ay",
-  "name": "Nudge 2 Email Followup checker",
+  "name": "Nudge Main2 Email Followup checker",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -96,7 +96,8 @@
           "id": "nVUgPjZX7pqA3Sg2",
           "name": "Microsoft Outlook account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -392,7 +393,7 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        4464,
+        4480,
         0
       ],
       "id": "50cc84ba-d350-4b74-9685-8b7fb553e62f",
@@ -412,7 +413,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4016,
+        4032,
         -128
       ],
       "id": "f5208b52-1115-4d70-a16c-d83a794a73e9",
@@ -424,7 +425,7 @@
         "operation": "get",
         "messageId": {
           "__rl": true,
-          "value": "={{ $json.messageId }}trr",
+          "value": "={{ $json.messageId }}",
           "mode": "id"
         },
         "output": "raw",
@@ -444,7 +445,8 @@
           "id": "nVUgPjZX7pqA3Sg2",
           "name": "Microsoft Outlook account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -514,7 +516,7 @@
         "nodeCredentialType": "microsoftOutlookOAuth2Api",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"toRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.toList) }},\n  \"ccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.ccList) }},\n  \"bccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.bccList) }},\n  \"body\": {\n    \"contentType\": \"HTML\",\n    \"content\": \"{{ $('Clean followup message').item.json.htmlMessage }}\"\n  }\n}\n",
+        "jsonBody": "={\n\"toRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.toList) }},\n\"ccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.ccList) }},\n\"bccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.bccList) }},\n\"body\": {\n\"contentType\": \"HTML\",\n\"content\": {{ JSON.stringify($('Clean followup message').item.json.htmlMessage) }}}\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -540,7 +542,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4240,
+        4256,
         -128
       ],
       "id": "dff8e715-8c7d-413b-92e3-68b6f8a1a49f",
@@ -549,12 +551,12 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const obj = $('Update to processing').item.json;\nconst maximum = $('Call \\'Nudge Config\\'').first().json.maxFollowUpCount;\n\nconst newCount = (obj?.followUpCount ?? 0) + 1;\n\nreturn {\n  followUpCount: newCount,\n  status: newCount >= maximum? \"followupmax\": \"pending\"\n}"
+        "jsCode": "const obj = $('Update to processing').item.json;\nconst maximum = $('Call \\'Nudge Config\\'').first().json.maxFollowUpCount;\n\nconst mymaximum = Number(maximum) || 0;\n\nconst newCount = (obj?.followUpCount ?? 0) + 1;\n\nreturn {\n  followUpCount: newCount,\n  status: mymaximum > 0 && newCount >= mymaximum? \"followupmax\": \"pending\"\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3792,
+        3808,
         -128
       ],
       "id": "30423119-77fb-4bea-bd07-4a987ee18115",
@@ -846,9 +848,9 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "1ba28c0d-0c60-4c21-ac96-c5ea3d11d552",
-  "activeVersionId": "3667a650-e695-4481-968f-ab21c6229f0a",
-  "versionCounter": 806,
+  "versionId": "ede685d6-6a62-45a8-88a4-11a35e3da36e",
+  "activeVersionId": null,
+  "versionCounter": 846,
   "triggerCount": 1,
   "sourceWorkflowId": null,
   "tags": [

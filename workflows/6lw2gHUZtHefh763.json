@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-25T10:00:04.458Z",
+  "updatedAt": "2026-06-28T06:26:13.770Z",
   "createdAt": "2026-04-21T10:58:59.786Z",
   "id": "6lw2gHUZtHefh763",
   "name": "Nudge Record data",
@@ -10,7 +10,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Get inputs from previous nodes\nconst openPeriods = $('Call \\'Nudge Excel Config\\'').item.json.openPeriods;\nconst sentDay = new Date($('Start').item.json.sentDateTime);\n\nconst rawDelay = Number($json.recommendedDelayInHours ?? $json.output.recommendedDelayInHours);\nconst shouldFollowUp = ($json.shouldFollowUp ?? $json.output.shouldFollowUp);\n\n// Early exit if no follow-up needed\nif (!shouldFollowUp) {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  };\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay <= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, Math.min(rawDelay, 14));\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour >= 24) {\n    // rollover to next day’s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 < 0 || int0 > 23 || int1 < 0 || int1 > 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i <= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) => a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time <= min) return min;\n    if (time > max) return min + 24; // next day’s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val >= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
+        "jsCode": "// Get inputs from previous nodes\nconst openPeriods = $('Call \\'Nudge Excel Config\\'').item.json.openPeriods;\nconst sentDay = new Date($('Start').item.json.sentDateTime);\n\nconst rawDelay = Number($json.recommendedDelayInHours ?? $json.output.recommendedDelayInHours);\nconst shouldFollowUp = ($json.shouldFollowUp ?? $json.output.shouldFollowUp);\n\n// Early exit if no follow-up needed\nif (!shouldFollowUp) {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  };\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay <= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, rawDelay);\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour >= 24) {\n    // rollover to next day’s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 < 0 || int0 > 23 || int1 < 0 || int1 > 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i <= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) => a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time <= min) return min;\n    if (time > max) return min + 24; // next day’s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val >= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -31,7 +31,7 @@
       "typeVersion": 2,
       "position": [
         4768,
-        -2912
+        -2880
       ],
       "id": "e0e6d2a1-a4bb-4b6e-a29a-2533c9a503b9",
       "name": "Insert redacted tokens"
@@ -295,7 +295,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "position": [
         1408,
-        -3200
+        -3264
       ]
     },
     {
@@ -411,7 +411,7 @@
       "typeVersion": 2.3,
       "position": [
         2304,
-        -3200
+        -3264
       ],
       "id": "6b858cd6-511a-4d9a-b046-b883535a0fc9",
       "name": "If message not in data table"
@@ -445,7 +445,7 @@
       "typeVersion": 2.2,
       "position": [
         2080,
-        -3200
+        -3264
       ],
       "id": "b222567c-996e-45d7-a4df-96736736d692",
       "name": "Check same id",
@@ -485,7 +485,7 @@
       "typeVersion": 2.3,
       "position": [
         2528,
-        -2768
+        -2864
       ],
       "id": "32f8de29-eb93-4599-b7c7-b394fa2a8e2a",
       "name": "If status is unprompted"
@@ -553,7 +553,7 @@
       "typeVersion": 2.3,
       "position": [
         4992,
-        -2912
+        -2880
       ],
       "id": "a61acb53-ece3-41d8-ae13-143f0663b14e",
       "name": "if old status is unprompted1"
@@ -581,7 +581,7 @@
       "typeVersion": 1.3,
       "position": [
         1856,
-        -3200
+        -3264
       ],
       "id": "413f1e2b-27d0-40c6-ab1a-f2820410c60b",
       "name": "Call 'Nudge Excel Config'"
@@ -708,7 +708,7 @@
       "typeVersion": 3.4,
       "position": [
         1632,
-        -3200
+        -3264
       ],
       "id": "ab8fa76c-5457-43aa-8a75-7b34edd9216a",
       "name": "Edit Fields"
@@ -754,7 +754,7 @@
       "typeVersion": 3.4,
       "position": [
         5664,
-        -3008
+        -2976
       ],
       "id": "69e4ce4b-858a-4f87-acfb-82b86cc5a580",
       "name": "Set hasChange to true"
@@ -1070,9 +1070,9 @@
   "meta": null,
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "12503eea-5052-4f71-9dd2-908428e96401",
+  "versionId": "b5115433-e643-4252-80ad-7633722ac9e0",
   "activeVersionId": "12503eea-5052-4f71-9dd2-908428e96401",
-  "versionCounter": 680,
+  "versionCounter": 683,
   "triggerCount": 0,
   "sourceWorkflowId": null,
   "tags": [
@@ -1110,7 +1110,7 @@
     }
   ],
   "versionMetadata": {
-    "name": "Version 12503eea",
-    "description": ""
+    "name": null,
+    "description": null
   }
 }

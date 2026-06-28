@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-06-12T12:13:45.913Z",
+  "updatedAt": "2026-06-28T02:05:36.000Z",
   "createdAt": "2026-04-21T07:56:29.433Z",
   "id": "xfsV9xyR68q3ZHJb",
   "name": "Nudge 1 Check email",
   "description": null,
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "parameters": {
@@ -620,7 +620,7 @@
   },
   "nodeGroups": [],
   "pinData": {},
-  "versionId": "4f681cdc-9c96-4af8-9006-37a6aefb0a68",
+  "versionId": "58c20004-8744-40ec-b934-fe77d8297812",
   "activeVersionId": null,
   "versionCounter": 562,
   "triggerCount": 1,

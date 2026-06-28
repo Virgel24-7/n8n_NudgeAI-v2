@@ -1,0 +1,762 @@
+{
+  "updatedAt": "2026-06-28T06:18:13.956Z",
+  "createdAt": "2026-06-28T01:34:57.830Z",
+  "id": "T2Ong37F3s6Br3xq",
+  "name": "Nudge Main1 Check Email",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -1376
+      ],
+      "id": "9634e060-c08d-45b7-810f-9fd7c388b07a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "getRows",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{455AB0A2-00FE-410D-A587-AAE16B41485D}",
+          "mode": "list",
+          "cachedResultName": "Metadata"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{3F5076F3-35CE-4A8E-97FA-4708EAB7FF5C}",
+          "mode": "list",
+          "cachedResultName": "metadata"
+        },
+        "limit": 1,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        -1376
+      ],
+      "id": "8367b1e5-51f8-4f95-b79b-f74a1450d98d",
+      "name": "Get last checked",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "3jmhUJAMJYXz5iHm",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6lw2gHUZtHefh763",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/6lw2gHUZtHefh763",
+          "cachedResultName": "Nudge Record data"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sentDateTime": "={{ $('Filter by not self-sender and date').item.json.sentDateTime }}",
+            "subject": "={{ $('Filter by not self-sender and date').item.json.subject }}",
+            "body_content": "={{ $('Filter by not self-sender and date').item.json.body.content }}",
+            "id": "={{ $('Filter by not self-sender and date').item.json.id }}",
+            "conversationId": "={{ $('Filter by not self-sender and date').item.json.conversationId }}",
+            "toRecipients": "={{ $('Filter by not self-sender and date').item.json.toRecipients }}",
+            "sender_emailAddress_address": "={{ $('Filter by not self-sender and date').item.json.sender.emailAddress.address }}"
+          },
+          "matchingColumns": [
+            "sentDateTime",
+            "subject",
+            "body_content",
+            "id",
+            "conversationId",
+            "toRecipients",
+            "sender_emailAddress_address"
+          ],
+          "schema": [
+            {
+              "id": "sentDateTime",
+              "displayName": "sentDateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "body_content",
+              "displayName": "body_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversationId",
+              "displayName": "conversationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "toRecipients",
+              "displayName": "toRecipients",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sender_emailAddress_address",
+              "displayName": "sender_emailAddress_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2496,
+        -1520
+      ],
+      "name": "Call Nudge helper record data",
+      "id": "c53959c7-7aef-445f-8ace-317ff5a1fb33",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "update",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{455AB0A2-00FE-410D-A587-AAE16B41485D}",
+          "mode": "list",
+          "cachedResultName": "Metadata"
+        },
+        "dataMode": "autoMap",
+        "columnToMatchOn": "=id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        3168,
+        -1328
+      ],
+      "id": "5b06b463-7b28-457e-963a-6c76ab8d32b1",
+      "name": "Update all last check",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "3jmhUJAMJYXz5iHm",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3cdebaa6-130c-4900-9694-433521ab12e8",
+              "name": "startDate",
+              "value": "={{ new Date().toISOString().replace(/\\.\\d{3}Z$/, 'Z') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        -1376
+      ],
+      "id": "8926162a-8117-4dfc-85e9-3b45eb64f2a1",
+      "name": "Prepare startDate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "80d50669-0bab-40ce-8b3f-e601f8de941e",
+              "leftValue": "={{ $json.hasChange }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2720,
+        -1520
+      ],
+      "id": "1d05d3d0-24b5-482f-9d98-fa3d7771edcb",
+      "name": "If hasChange"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  id: 1,\n  allLastCheckedAt: $('Prepare startDate').first().json.startDate\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        -1328
+      ],
+      "id": "3fa41977-9c89-4d43-bcfb-c980a0124cb1",
+      "name": "Prepare allLastCheckedAt"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "b3OCuHLwF5yV7QDp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
+          "cachedResultName": "Nudge Config"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        -1376
+      ],
+      "id": "69c25757-cf34-44a5-9f3b-94049d96e887",
+      "name": "Call 'Nudge Config'"
+    },
+    {
+      "parameters": {
+        "resource": "folderMessage",
+        "folderId": {
+          "__rl": true,
+          "value": "AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5-uwAAAgEMAAAA",
+          "mode": "list",
+          "cachedResultName": "Inbox",
+          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5%2FuwAAAgEMAAAA"
+        },
+        "returnAll": true,
+        "output": "raw",
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "receivedAfter": "={{ $('Get last checked').item.json.allLastCheckedAt }}"
+            }
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -1376
+      ],
+      "id": "2475c918-63fc-4e84-b569-198ab8217aec",
+      "name": "Get received messages after last check time",
+      "webhookId": "362686e4-773c-43b2-8957-4bc1ec459440",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nVUgPjZX7pqA3Sg2",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const sentDateTime = item.json.sentDateTime;\n  const lastCheckedRaw = $('Get last checked').first().json.allLastCheckedAt;\n\n  // Try parsing lastChecked into a Date, guard against empty/invalid\n  let lastChecked = null;\n  if (lastCheckedRaw && !isNaN(Date.parse(lastCheckedRaw))) {\n    lastChecked = new Date(lastCheckedRaw);\n  }\n\n  // Condition 1: sentDateTime is after or equal to lastChecked\n  let cond1 = false;\n  if (sentDateTime && lastChecked) {\n    const sent = new Date(sentDateTime);\n    cond1 = sent >= lastChecked;\n  }\n\n  // Condition 2: sender != first recipient\n  const sender = item.json.sender?.emailAddress?.address;\n  const recipient = item.json.toRecipients?.[0]?.emailAddress?.name;\n  const cond2 = sender && recipient ? sender !== recipient : false;\n\n  // Combine conditions\n  const passesFilter = cond1 && cond2;\n\n  return {\n    json: {\n      ...item.json,\n      passesFilter\n    }\n  };\n}).filter(item => item.json.passesFilter);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -1376
+      ],
+      "id": "39f7881c-3e18-4d83-a014-23ba6ffa80df",
+      "name": "Filter by not self-sender and date"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const ccObj = $('Filter by not self-sender and date').item.json.ccRecipients;\nconst bccObj = $('Filter by not self-sender and date').item.json.ccRecipients;\n\nconst ccList = ccObj.length > 0 ?\n  ccObj.map((obj) => obj.emailAddress.address): [];\n\nconst bccList = bccObj.length > 0 ?\n  bccObj.map((obj) => obj.emailAddress.address): [];\n\nreturn {ccList: ccList, bccList: bccList};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -1376
+      ],
+      "id": "5eefd493-2734-4165-bfca-38eb6f42801f",
+      "name": "Prepare cc and bcc list"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e44b3404-f49f-4cba-a671-fa46ef8d577d",
+              "leftValue": "={{ $json.ccList }}",
+              "rightValue": "={{ $('Call \\'Nudge Config\\'').item.json.agentEmail }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "bc4a7d44-9363-4d62-8d82-b59fd7be5dbd",
+              "leftValue": "={{ $json.bccList }}",
+              "rightValue": "={{ $('Call \\'Nudge Config\\'').item.json.agentEmail }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1600,
+        -1376
+      ],
+      "id": "2314c3e5-daff-4bbb-92f3-6f8f2a6fb457",
+      "name": "If Agent is cc or bcc"
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "lookup",
+        "workbook": {
+          "__rl": true,
+          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Emails"
+        },
+        "table": {
+          "__rl": true,
+          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+          "mode": "list",
+          "cachedResultName": "email"
+        },
+        "lookupColumn": "=conversationId",
+        "lookupValue": "={{ $('Filter by not self-sender and date').item.json.conversationId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        -1440
+      ],
+      "id": "f24c8f6a-7b85-4c62-ad8e-95567046f4ea",
+      "name": "Lookup a column",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "3jmhUJAMJYXz5iHm",
+          "name": "Microsoft Excel account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "value": "={{ $json.messageId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        -1376
+      ],
+      "id": "0635cfce-afad-440a-97ba-ae0769603092",
+      "name": "Get a message",
+      "webhookId": "c6797864-f557-4677-92b5-4c80da41ec0d",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "nVUgPjZX7pqA3Sg2",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "08a76b91-9d23-45bf-bc78-dbf47d2ecf15",
+              "leftValue": "={{ $json.to }}",
+              "rightValue": "={{ $('Filter by not self-sender and date').item.json.sender.emailAddress.address }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            },
+            {
+              "id": "61e9cefb-7174-4c91-9d0d-3622542583db",
+              "leftValue": "={{ $json.to }}",
+              "rightValue": "={{ $('Filter by not self-sender and date').item.json.from.emailAddress.address }}",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2272,
+        -1376
+      ],
+      "id": "f7b1b21d-ac58-41ac-91d4-033ba76e6e53",
+      "name": "If new sender is previously 'to'"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call 'Nudge Config'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get last checked": {
+      "main": [
+        [
+          {
+            "node": "Prepare startDate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Nudge helper record data": {
+      "main": [
+        [
+          {
+            "node": "If hasChange",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare startDate": {
+      "main": [
+        [
+          {
+            "node": "Get received messages after last check time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If hasChange": {
+      "main": [
+        [
+          {
+            "node": "Prepare allLastCheckedAt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare allLastCheckedAt": {
+      "main": [
+        [
+          {
+            "node": "Update all last check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Nudge Config'": {
+      "main": [
+        [
+          {
+            "node": "Get last checked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get received messages after last check time": {
+      "main": [
+        [
+          {
+            "node": "Filter by not self-sender and date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter by not self-sender and date": {
+      "main": [
+        [
+          {
+            "node": "Prepare cc and bcc list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare cc and bcc list": {
+      "main": [
+        [
+          {
+            "node": "If Agent is cc or bcc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Agent is cc or bcc": {
+      "main": [
+        [
+          {
+            "node": "Lookup a column",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare allLastCheckedAt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup a column": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Nudge helper record data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "If new sender is previously 'to'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If new sender is previously 'to'": {
+      "main": [
+        [
+          {
+            "node": "Prepare allLastCheckedAt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Nudge helper record data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "pinData": {},
+  "versionId": "5f6b2d57-e22f-4b6b-8c46-e1a103999ee1",
+  "activeVersionId": null,
+  "versionCounter": 89,
+  "triggerCount": 0,
+  "sourceWorkflowId": null,
+  "tags": [
+    {
+      "updatedAt": "2026-04-21T11:40:32.921Z",
+      "createdAt": "2026-04-21T11:40:32.921Z",
+      "id": "AdmOOQj7jhgPkkAA",
+      "name": "Nudge"
+    }
+  ],
+  "shared": [
+    {
+      "updatedAt": "2026-06-28T01:34:57.853Z",
+      "createdAt": "2026-06-28T01:34:57.853Z",
+      "role": "workflow:owner",
+      "workflowId": "T2Ong37F3s6Br3xq",
+      "projectId": "rRCGWY99DWwNBygs",
+      "project": {
+        "updatedAt": "2026-06-12T11:53:00.215Z",
+        "createdAt": "2026-06-12T11:51:48.599Z",
+        "id": "rRCGWY99DWwNBygs",
+        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}
