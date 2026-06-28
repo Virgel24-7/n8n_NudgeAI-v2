@@ -25,11 +25,10 @@ docker cp "${containerName}:/home/node/.n8n/backups/workflows/." $repoPath
 $workflowFiles = Get-ChildItem -Path $repoPath -Filter *.json
 foreach ($file in $workflowFiles) {
     $content = Get-Content $file.FullName -Raw
-    # Remove BOM if present
-    $content = $content.TrimStart([char]0xFEFF)
+    $content = $content.TrimStart([char]0xFEFF) # remove BOM if present
     $json = $content | ConvertFrom-Json
 
-    # Strip credentials
+    # Strip credentials from nodes
     if ($json.nodes) {
         foreach ($node in $json.nodes) {
             if ($node.PSObject.Properties.Name -contains "credentials") {
@@ -38,11 +37,17 @@ foreach ($file in $workflowFiles) {
         }
     }
 
+    # Strip workflow owner metadata
+    foreach ($field in @("createdBy","updatedBy","sharedWith","shared")) {
+        if ($json.PSObject.Properties.Name -contains $field) {
+            $json.PSObject.Properties.Remove($field)
+        }
+    }
+
     # Save back without BOM
     $json | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
 }
-
-Write-Host "Credentials stripped from all workflow JSON files."
+Write-Host "Credentials and owner metadata stripped from all workflow JSON files."
 
 # Commit and push
 Set-Location $exportPath

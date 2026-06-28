@@ -739,28 +739,6 @@
                      "name":  "Nudge"
                  }
              ],
-    "shared":  [
-                   {
-                       "updatedAt":  "2026-06-28T01:34:57.853Z",
-                       "createdAt":  "2026-06-28T01:34:57.853Z",
-                       "role":  "workflow:owner",
-                       "workflowId":  "T2Ong37F3s6Br3xq",
-                       "projectId":  "rRCGWY99DWwNBygs",
-                       "project":  {
-                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
-                                       "createdAt":  "2026-06-12T11:51:48.599Z",
-                                       "id":  "rRCGWY99DWwNBygs",
-                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
-                                       "type":  "personal",
-                                       "icon":  null,
-                                       "description":  null,
-                                       "customTelemetryTags":  [
-
-                                                               ],
-                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-                                   }
-                   }
-               ],
     "versionMetadata":  {
                             "name":  null,
                             "description":  null

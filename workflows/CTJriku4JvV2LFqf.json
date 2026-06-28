@@ -173,28 +173,6 @@
                      "name":  "Helper"
                  }
              ],
-    "shared":  [
-                   {
-                       "updatedAt":  "2026-06-12T11:54:16.517Z",
-                       "createdAt":  "2026-06-12T11:54:16.517Z",
-                       "role":  "workflow:owner",
-                       "workflowId":  "CTJriku4JvV2LFqf",
-                       "projectId":  "rRCGWY99DWwNBygs",
-                       "project":  {
-                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
-                                       "createdAt":  "2026-06-12T11:51:48.599Z",
-                                       "id":  "rRCGWY99DWwNBygs",
-                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
-                                       "type":  "personal",
-                                       "icon":  null,
-                                       "description":  null,
-                                       "customTelemetryTags":  [
-
-                                                               ],
-                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-                                   }
-                   }
-               ],
     "versionMetadata":  {
                             "name":  "Version 7042cc5f",
                             "description":  ""
