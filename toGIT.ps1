@@ -24,14 +24,10 @@ docker cp "${containerName}:/home/node/.n8n/backups/workflows/." $repoPath
 # Clean credentials and metadata from exported workflows
 $workflowFiles = Get-ChildItem -Path $repoPath -Filter *.json
 foreach ($file in $workflowFiles) {
-    # Read raw content and strip BOM if present
     $content = Get-Content $file.FullName -Raw
     $content = $content.TrimStart([char]0xFEFF)
-
-    # Parse JSON
     $json = $content | ConvertFrom-Json
 
-    # Build a clean object with only safe fields
     $clean = [PSCustomObject]@{
         id          = $json.id
         name        = $json.name
@@ -42,16 +38,20 @@ foreach ($file in $workflowFiles) {
         tags        = $json.tags
     }
 
-    # Strip credentials from nodes
     foreach ($node in $clean.nodes) {
         if ($node.PSObject.Properties.Name -contains "credentials") {
             $node.PSObject.Properties.Remove("credentials")
         }
     }
 
-    # Save back without BOM (lowercase utf8 ensures no BOM)
-    $clean | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
+    $jsonText = $clean | ConvertTo-Json -Depth 100
+    $jsonText = $jsonText.TrimStart([char]0xFEFF)
+
+    # Write without BOM
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($file.FullName, $jsonText, $utf8NoBom)
 }
+
 Write-Host "Workflows cleaned and saved."
 
 # Commit and push
