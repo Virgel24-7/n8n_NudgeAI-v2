@@ -1,111 +1,117 @@
-{
-  "updatedAt": "2026-05-22T03:06:50.366Z",
-  "createdAt": "2026-04-09T07:49:45.816Z",
-  "id": "H31FvFsoshAxNMkm",
-  "name": "Nudge Redactor",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const body = $input.item.json.message || \"\";\n\nconst tokenMap = {};\nlet counter = 0;\n\nconst redacted = body\n  .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g, (match) => {\n    const token = `__EMAIL_${counter++}__`;\n    tokenMap[token] = match;\n    return token;\n  })\n  .replace(/https?:\\/\\/[^\\s\"<>]+/g, (match) => {\n    const token = `__URL_${counter++}__`;\n    tokenMap[token] = match;\n    return token;\n  });\n\nreturn { \n  redactedBody: redacted,\n  tokenMap: tokenMap\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        496,
-        352
-      ],
-      "id": "776468f7-0d62-46d1-814e-a88649e33ab5",
-      "name": "Redact"
-    },
-    {
-      "parameters": {
-        "workflowInputs": {
-          "values": [
-            {
-              "name": "message"
-            }
-          ]
-        }
-      },
-      "id": "c055762a-8fe7-4141-a639-df2372f30060",
-      "typeVersion": 1.1,
-      "name": "Start",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "position": [
-        272,
-        352
-      ]
-    }
-  ],
-  "connections": {
-    "Start": {
-      "main": [
-        [
-          {
-            "node": "Redact",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false,
-    "binaryMode": "separate",
-    "timeSavedMode": "fixed",
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "staticData": null,
-  "meta": null,
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "994ce122-905f-49ec-818c-2831c0419301",
-  "activeVersionId": "994ce122-905f-49ec-818c-2831c0419301",
-  "versionCounter": 61,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-04-21T11:40:32.921Z",
-      "createdAt": "2026-04-21T11:40:32.921Z",
-      "id": "AdmOOQj7jhgPkkAA",
-      "name": "Nudge"
-    },
-    {
-      "updatedAt": "2026-05-21T03:33:36.033Z",
-      "createdAt": "2026-05-21T03:33:36.033Z",
-      "id": "FDr9UduSpa2ppJVf",
-      "name": "Helper"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-06-12T11:54:16.556Z",
-      "createdAt": "2026-06-12T11:54:16.556Z",
-      "role": "workflow:owner",
-      "workflowId": "H31FvFsoshAxNMkm",
-      "projectId": "rRCGWY99DWwNBygs",
-      "project": {
-        "updatedAt": "2026-06-12T11:53:00.215Z",
-        "createdAt": "2026-06-12T11:51:48.599Z",
-        "id": "rRCGWY99DWwNBygs",
-        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": "Version 6eba927b",
-    "description": ""
-  }
+﻿{
+    "updatedAt":  "2026-05-22T03:06:50.366Z",
+    "createdAt":  "2026-04-09T07:49:45.816Z",
+    "id":  "H31FvFsoshAxNMkm",
+    "name":  "Nudge Redactor",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const body = $input.item.json.message || \"\";\n\nconst tokenMap = {};\nlet counter = 0;\n\nconst redacted = body\n  .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g, (match) =\u003e {\n    const token = `__EMAIL_${counter++}__`;\n    tokenMap[token] = match;\n    return token;\n  })\n  .replace(/https?:\\/\\/[^\\s\"\u003c\u003e]+/g, (match) =\u003e {\n    const token = `__URL_${counter++}__`;\n    tokenMap[token] = match;\n    return token;\n  });\n\nreturn { \n  redactedBody: redacted,\n  tokenMap: tokenMap\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       496,
+                                       352
+                                   ],
+                      "id":  "776468f7-0d62-46d1-814e-a88649e33ab5",
+                      "name":  "Redact"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowInputs":  {
+                                                                "values":  [
+                                                                               {
+                                                                                   "name":  "message"
+                                                                               }
+                                                                           ]
+                                                            }
+                                     },
+                      "id":  "c055762a-8fe7-4141-a639-df2372f30060",
+                      "typeVersion":  1.1,
+                      "name":  "Start",
+                      "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                      "position":  [
+                                       272,
+                                       352
+                                   ]
+                  }
+              ],
+    "connections":  {
+                        "Start":  {
+                                      "main":  [
+                                                   [
+                                                       {
+                                                           "node":  "Redact",
+                                                           "type":  "main",
+                                                           "index":  0
+                                                       }
+                                                   ]
+                                               ]
+                                  }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "availableInMCP":  false,
+                     "binaryMode":  "separate",
+                     "timeSavedMode":  "fixed",
+                     "callerPolicy":  "workflowsFromSameOwner"
+                 },
+    "staticData":  null,
+    "meta":  null,
+    "nodeGroups":  [
+
+                   ],
+    "pinData":  {
+
+                },
+    "versionId":  "994ce122-905f-49ec-818c-2831c0419301",
+    "activeVersionId":  "994ce122-905f-49ec-818c-2831c0419301",
+    "versionCounter":  61,
+    "triggerCount":  0,
+    "sourceWorkflowId":  null,
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-04-21T11:40:32.921Z",
+                     "createdAt":  "2026-04-21T11:40:32.921Z",
+                     "id":  "AdmOOQj7jhgPkkAA",
+                     "name":  "Nudge"
+                 },
+                 {
+                     "updatedAt":  "2026-05-21T03:33:36.033Z",
+                     "createdAt":  "2026-05-21T03:33:36.033Z",
+                     "id":  "FDr9UduSpa2ppJVf",
+                     "name":  "Helper"
+                 }
+             ],
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-06-12T11:54:16.556Z",
+                       "createdAt":  "2026-06-12T11:54:16.556Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "H31FvFsoshAxNMkm",
+                       "projectId":  "rRCGWY99DWwNBygs",
+                       "project":  {
+                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
+                                       "createdAt":  "2026-06-12T11:51:48.599Z",
+                                       "id":  "rRCGWY99DWwNBygs",
+                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "customTelemetryTags":  [
+
+                                                               ],
+                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+                                   }
+                   }
+               ],
+    "versionMetadata":  {
+                            "name":  "Version 6eba927b",
+                            "description":  ""
+                        }
 }

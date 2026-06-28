@@ -21,6 +21,26 @@ Remove-Item -Path "$repoPath\*" -Recurse -Force
 # Copy out of container to local workflows folder
 docker cp "${containerName}:/home/node/.n8n/backups/workflows/." $repoPath
 
+# Clean credentials from exported workflows
+$workflowFiles = Get-ChildItem -Path $repoPath -Filter *.json
+
+foreach ($file in $workflowFiles) {
+    $json = Get-Content $file.FullName -Raw | ConvertFrom-Json
+
+    if ($json.nodes) {
+        foreach ($node in $json.nodes) {
+            if ($node.PSObject.Properties.Name -contains "credentials") {
+                $node.PSObject.Properties.Remove("credentials")
+            }
+        }
+    }
+
+    # Save back to file
+    $json | ConvertTo-Json -Depth 100 | Set-Content $file.FullName -Encoding UTF8
+}
+
+Write-Host "Credentials stripped from all workflow JSON files."
+
 # Commit and push
 Set-Location $exportPath
 git add .

@@ -1,378 +1,388 @@
-{
-  "updatedAt": "2026-06-28T06:16:23.855Z",
-  "createdAt": "2026-04-21T11:00:57.474Z",
-  "id": "aXToBav5JzIniNjn",
-  "name": "Nudge Main1 Check unprompted",
-  "description": null,
-  "active": false,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes",
-              "minutesInterval": 1
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        0,
-        0
-      ],
-      "id": "64cac834-7a08-46a4-9f98-199b30689001",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "resource": "table",
-        "operation": "getRows",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "table": {
-          "__rl": true,
-          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
-          "mode": "list",
-          "cachedResultName": "email"
-        },
-        "returnAll": true,
-        "filters": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        448,
-        0
-      ],
-      "id": "7dcc0413-f7e6-47e7-b1d5-e4bda8b92a29",
-      "name": "Get rows",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "141f3f6e-437a-4968-b32b-4e6433089de7",
-              "leftValue": "={{ $json.status }}",
-              "rightValue": "unprompted",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.filter",
-      "typeVersion": 2.3,
-      "position": [
-        672,
-        0
-      ],
-      "id": "e4c00dee-5bb7-4bae-9297-153c055b5c4e",
-      "name": "Filter"
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "messageId": {
-          "__rl": true,
-          "value": "={{ $json.messageId }}",
-          "mode": "id"
-        },
-        "output": "raw",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [
-        896,
-        0
-      ],
-      "id": "2d1ec175-b152-4326-aa24-122654a85945",
-      "name": "Get a message",
-      "webhookId": "839122fd-e047-4ed3-97f2-beede42e4214",
-      "alwaysOutputData": false,
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "6lw2gHUZtHefh763",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/6lw2gHUZtHefh763",
-          "cachedResultName": "Nudge Record data"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "sentDateTime": "={{ $json.sentDateTime }}",
-            "subject": "={{ $json.subject }}",
-            "body_content": "={{ $json.body.content }}",
-            "id": "={{ $json.id }}",
-            "conversationId": "={{ $json.conversationId }}",
-            "toRecipients": "={{ $json.toRecipients }}",
-            "sender_emailAddress_address": "={{ $json.sender.emailAddress.address }}"
-          },
-          "matchingColumns": [
-            "sentDateTime",
-            "subject",
-            "body_content",
-            "id",
-            "conversationId",
-            "toRecipients",
-            "sender_emailAddress_address"
-          ],
-          "schema": [
-            {
-              "id": "sentDateTime",
-              "displayName": "sentDateTime",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "subject",
-              "displayName": "subject",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "body_content",
-              "displayName": "body_content",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "conversationId",
-              "displayName": "conversationId",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "toRecipients",
-              "displayName": "toRecipients",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "sender_emailAddress_address",
-              "displayName": "sender_emailAddress_address",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        1120,
-        0
-      ],
-      "name": "Call Nudge helper record data",
-      "id": "636efcf0-a84b-4620-bce5-213c38957bfd"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "b3OCuHLwF5yV7QDp",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
-          "cachedResultName": "Nudge Config"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        224,
-        0
-      ],
-      "id": "f85a6113-8be7-46c6-8851-34ee1520c53f",
-      "name": "Call 'Nudge Config'"
-    }
-  ],
-  "connections": {
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Call 'Nudge Config'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get rows": {
-      "main": [
-        [
-          {
-            "node": "Filter",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter": {
-      "main": [
-        [
-          {
-            "node": "Get a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get a message": {
-      "main": [
-        [
-          {
-            "node": "Call Nudge helper record data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Nudge Config'": {
-      "main": [
-        [
-          {
-            "node": "Get rows",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
-  },
-  "staticData": {
-    "node:Schedule Trigger": {
-      "recurrenceRules": [
-        12
-      ]
-    }
-  },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "88daa53c-ab77-4205-8f87-c6e2a5865d61",
-  "activeVersionId": null,
-  "versionCounter": 87,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-04-21T11:40:32.921Z",
-      "createdAt": "2026-04-21T11:40:32.921Z",
-      "id": "AdmOOQj7jhgPkkAA",
-      "name": "Nudge"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-06-12T11:54:16.629Z",
-      "createdAt": "2026-06-12T11:54:16.629Z",
-      "role": "workflow:owner",
-      "workflowId": "aXToBav5JzIniNjn",
-      "projectId": "rRCGWY99DWwNBygs",
-      "project": {
-        "updatedAt": "2026-06-12T11:53:00.215Z",
-        "createdAt": "2026-06-12T11:51:48.599Z",
-        "id": "rRCGWY99DWwNBygs",
-        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
-  }
+﻿{
+    "updatedAt":  "2026-06-28T06:16:23.855Z",
+    "createdAt":  "2026-04-21T11:00:57.474Z",
+    "id":  "aXToBav5JzIniNjn",
+    "name":  "Nudge Main1 Check unprompted",
+    "description":  null,
+    "active":  false,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "minutes",
+                                                                           "minutesInterval":  1
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "id":  "64cac834-7a08-46a4-9f98-199b30689001",
+                      "name":  "Schedule Trigger"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "table",
+                                         "operation":  "getRows",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "email"
+                                                   },
+                                         "returnAll":  true,
+                                         "filters":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       448,
+                                       0
+                                   ],
+                      "id":  "7dcc0413-f7e6-47e7-b1d5-e4bda8b92a29",
+                      "name":  "Get rows"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "141f3f6e-437a-4968-b32b-4e6433089de7",
+                                                                                   "leftValue":  "={{ $json.status }}",
+                                                                                   "rightValue":  "unprompted",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.filter",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       672,
+                                       0
+                                   ],
+                      "id":  "e4c00dee-5bb7-4bae-9297-153c055b5c4e",
+                      "name":  "Filter"
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "get",
+                                         "messageId":  {
+                                                           "__rl":  true,
+                                                           "value":  "={{ $json.messageId }}",
+                                                           "mode":  "id"
+                                                       },
+                                         "output":  "raw",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftOutlook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       896,
+                                       0
+                                   ],
+                      "id":  "2d1ec175-b152-4326-aa24-122654a85945",
+                      "name":  "Get a message",
+                      "webhookId":  "839122fd-e047-4ed3-97f2-beede42e4214",
+                      "alwaysOutputData":  false,
+                      "onError":  "continueErrorOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "6lw2gHUZtHefh763",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/workflow/6lw2gHUZtHefh763",
+                                                            "cachedResultName":  "Nudge Record data"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+                                                                              "sentDateTime":  "={{ $json.sentDateTime }}",
+                                                                              "subject":  "={{ $json.subject }}",
+                                                                              "body_content":  "={{ $json.body.content }}",
+                                                                              "id":  "={{ $json.id }}",
+                                                                              "conversationId":  "={{ $json.conversationId }}",
+                                                                              "toRecipients":  "={{ $json.toRecipients }}",
+                                                                              "sender_emailAddress_address":  "={{ $json.sender.emailAddress.address }}"
+                                                                          },
+                                                                "matchingColumns":  [
+                                                                                        "sentDateTime",
+                                                                                        "subject",
+                                                                                        "body_content",
+                                                                                        "id",
+                                                                                        "conversationId",
+                                                                                        "toRecipients",
+                                                                                        "sender_emailAddress_address"
+                                                                                    ],
+                                                                "schema":  [
+                                                                               {
+                                                                                   "id":  "sentDateTime",
+                                                                                   "displayName":  "sentDateTime",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "subject",
+                                                                                   "displayName":  "subject",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "body_content",
+                                                                                   "displayName":  "body_content",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "id",
+                                                                                   "displayName":  "id",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "conversationId",
+                                                                                   "displayName":  "conversationId",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "toRecipients",
+                                                                                   "displayName":  "toRecipients",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               },
+                                                                               {
+                                                                                   "id":  "sender_emailAddress_address",
+                                                                                   "displayName":  "sender_emailAddress_address",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "removed":  false
+                                                                               }
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.2,
+                      "position":  [
+                                       1120,
+                                       0
+                                   ],
+                      "name":  "Call Nudge helper record data",
+                      "id":  "636efcf0-a84b-4620-bce5-213c38957bfd"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "b3OCuHLwF5yV7QDp",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/workflow/b3OCuHLwF5yV7QDp",
+                                                            "cachedResultName":  "Nudge Config"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+
+                                                                          },
+                                                                "matchingColumns":  [
+
+                                                                                    ],
+                                                                "schema":  [
+
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       224,
+                                       0
+                                   ],
+                      "id":  "f85a6113-8be7-46c6-8851-34ee1520c53f",
+                      "name":  "Call \u0027Nudge Config\u0027"
+                  }
+              ],
+    "connections":  {
+                        "Schedule Trigger":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Call \u0027Nudge Config\u0027",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Get rows":  {
+                                         "main":  [
+                                                      [
+                                                          {
+                                                              "node":  "Filter",
+                                                              "type":  "main",
+                                                              "index":  0
+                                                          }
+                                                      ]
+                                                  ]
+                                     },
+                        "Filter":  {
+                                       "main":  [
+                                                    [
+                                                        {
+                                                            "node":  "Get a message",
+                                                            "type":  "main",
+                                                            "index":  0
+                                                        }
+                                                    ]
+                                                ]
+                                   },
+                        "Get a message":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Call Nudge helper record data",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Call \u0027Nudge Config\u0027":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Get rows",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "staticData":  {
+                       "node:Schedule Trigger":  {
+                                                     "recurrenceRules":  [
+                                                                             12
+                                                                         ]
+                                                 }
+                   },
+    "meta":  {
+                 "templateCredsSetupCompleted":  true
+             },
+    "nodeGroups":  [
+
+                   ],
+    "pinData":  {
+
+                },
+    "versionId":  "88daa53c-ab77-4205-8f87-c6e2a5865d61",
+    "activeVersionId":  null,
+    "versionCounter":  87,
+    "triggerCount":  1,
+    "sourceWorkflowId":  null,
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-04-21T11:40:32.921Z",
+                     "createdAt":  "2026-04-21T11:40:32.921Z",
+                     "id":  "AdmOOQj7jhgPkkAA",
+                     "name":  "Nudge"
+                 }
+             ],
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-06-12T11:54:16.629Z",
+                       "createdAt":  "2026-06-12T11:54:16.629Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "aXToBav5JzIniNjn",
+                       "projectId":  "rRCGWY99DWwNBygs",
+                       "project":  {
+                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
+                                       "createdAt":  "2026-06-12T11:51:48.599Z",
+                                       "id":  "rRCGWY99DWwNBygs",
+                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "customTelemetryTags":  [
+
+                                                               ],
+                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+                                   }
+                   }
+               ],
+    "versionMetadata":  {
+                            "name":  null,
+                            "description":  null
+                        }
 }

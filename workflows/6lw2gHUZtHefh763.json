@@ -1,1116 +1,1144 @@
-{
-  "updatedAt": "2026-06-28T06:26:13.770Z",
-  "createdAt": "2026-04-21T10:58:59.786Z",
-  "id": "6lw2gHUZtHefh763",
-  "name": "Nudge Record data",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Get inputs from previous nodes\nconst openPeriods = $('Call \\'Nudge Excel Config\\'').item.json.openPeriods;\nconst sentDay = new Date($('Start').item.json.sentDateTime);\n\nconst rawDelay = Number($json.recommendedDelayInHours ?? $json.output.recommendedDelayInHours);\nconst shouldFollowUp = ($json.shouldFollowUp ?? $json.output.shouldFollowUp);\n\n// Early exit if no follow-up needed\nif (!shouldFollowUp) {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  };\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay <= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, rawDelay);\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour >= 24) {\n    // rollover to next day’s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 < 0 || int0 > 23 || int1 < 0 || int1 > 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i <= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) => a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time <= min) return min;\n    if (time > max) return min + 24; // next day’s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val >= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4544,
-        -2912
-      ],
-      "id": "5b73a28f-215b-4d98-8d25-5c7332868412",
-      "name": "Get Followup time",
-      "alwaysOutputData": false
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "// Get inputs\nlet text = ($('Is Prompt error').item.json.followupMessage ?? \n           $('Is Prompt error').item.json.output?.followupMessage) || '';\n\ntext += \"/n/n\" + $('Call \\'Nudge Excel Config\\'').item.json.aiWarningText;\n\nlet tokens = $('Call \\'Redactor\\' body').item.json.tokenMap;\n\n// Ensure tokens is an object\nif (typeof tokens === 'string') {\n  try {\n    tokens = JSON.parse(tokens);\n  } catch (err) {\n    tokens = {};\n  }\n}\nif (!tokens || typeof tokens !== 'object') {\n  tokens = {};\n}\n\n// Escape regex special characters\nfunction escapeRegex(str) {\n  if (typeof str !== 'string') return '';\n  return str.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n}\n\n// Replace tokens safely\nfor (const key in tokens) {\n  // Skip invalid keys\n  if (typeof key !== 'string' || !key.trim()) continue;\n\n  const value = tokens[key];\n\n  // Skip invalid values\n  if (typeof value !== 'string') continue;\n\n  let replacement = value;\n\n  // URL handling (optional — here just passes through)\n  if (value.startsWith('http://') || value.startsWith('https://')) {\n    replacement = `<a href=\"${value}\">${value}</a>`;\n  }\n\n  const regex = new RegExp(escapeRegex(key), 'g');\n  text = text.replace(regex, replacement);\n}\n\n// Return result\nreturn {\n  storedMessage: text\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4768,
-        -2880
-      ],
-      "id": "e0e6d2a1-a4bb-4b6e-a29a-2533c9a503b9",
-      "name": "Insert redacted tokens"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "00895110-f749-4389-bd85-93bc6d638cba",
-              "name": "message",
-              "value": "={{ $('Start').item.json.subject }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        3424,
-        -3296
-      ],
-      "id": "9688846b-78ae-49f9-bd55-9098c0894ba2",
-      "name": "Prepare message subject"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "00895110-f749-4389-bd85-93bc6d638cba",
-              "name": "message",
-              "value": "={{ $json.body }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        2976,
-        -3296
-      ],
-      "id": "837b4302-770e-4de5-8c64-e3c387f7070c",
-      "name": "Prepare message body"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "CTJriku4JvV2LFqf",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/CTJriku4JvV2LFqf",
-          "cachedResultName": "Nudge Decision prompt"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "subject": "={{ $json.redactedSubject }}",
-            "body": "={{ $('Call \\'Redactor\\' body').item.json.redactedBody }}",
-            "sentTime": "={{ $('Start').item.json.sentDateTime }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "subject",
-              "displayName": "subject",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "body",
-              "displayName": "body",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "sentTime",
-              "displayName": "sentTime",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        4096,
-        -3296
-      ],
-      "id": "616c3d0a-e633-49b4-8415-07307896c80f",
-      "name": "Call 'Followup prompt'",
-      "retryOnFail": false,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "let html = $('Start').item.json.body_content;\n\n// Remove scripts/styles\nhtml = html.replace(/<style[\\s\\S]*?<\\/style>/gi, '');\nhtml = html.replace(/<script[\\s\\S]*?<\\/script>/gi, '');\n\n// Replace <br> and block tags with newlines\nhtml = html.replace(/<br\\s*\\/?>/gi, '\\n');\nhtml = html.replace(/<\\/div>/gi, '\\n');\nhtml = html.replace(/<\\/p>/gi, '\\n');\n\n// Remove all remaining HTML tags\nlet text = html.replace(/<[^>]+>/g, '');\n\n// Decode basic HTML entities\ntext = text\n  .replace(/&nbsp;/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>');\n\n// Clean extra whitespace\ntext = text.replace(/\\n\\s*\\n/g, '\\n\\n').trim();\n\nreturn {\n  body: text\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2752,
-        -3296
-      ],
-      "id": "49d653ff-3976-421b-a835-2282ac6b2284",
-      "name": "Clean Email body"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "c653c279-33b1-49f6-8d54-9c4dc05c4a2b",
-              "name": "redactedSubject",
-              "value": "={{ $json.redactedBody }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        3872,
-        -3296
-      ],
-      "id": "e4371791-c459-42cf-b65b-22ca165f2e12",
-      "name": "Prepare redacted subject"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "03c9bc69-64da-4b19-ac03-c58ab0dadca2",
-              "leftValue": "={{ $json.error ?? $json?.output?.error }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        4320,
-        -3296
-      ],
-      "id": "335f5377-e53d-4d12-8e95-7e3215077a74",
-      "name": "Is Prompt error"
-    },
-    {
-      "parameters": {
-        "resource": "table",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Excel Config\\'').item.json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "table": {
-          "__rl": true,
-          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
-          "mode": "list",
-          "cachedResultName": "email"
-        },
-        "dataMode": "autoMap",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        4992,
-        -3104
-      ],
-      "id": "c61e9ddc-1699-4b0a-b2a2-919888ccd7aa",
-      "name": "(Unprompted) Append rows to table",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "workflowInputs": {
-          "values": [
-            {
-              "name": "sentDateTime",
-              "type": "any"
-            },
-            {
-              "name": "subject",
-              "type": "any"
-            },
-            {
-              "name": "body_content",
-              "type": "any"
-            },
-            {
-              "name": "id",
-              "type": "any"
-            },
-            {
-              "name": "conversationId",
-              "type": "any"
-            },
-            {
-              "name": "toRecipients",
-              "type": "any"
-            },
-            {
-              "name": "sender_emailAddress_address",
-              "type": "any"
-            }
-          ]
-        }
-      },
-      "id": "a8f59f75-7620-4c20-9a5b-c35a6223227e",
-      "typeVersion": 1.1,
-      "name": "Start",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "position": [
-        1408,
-        -3264
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "H31FvFsoshAxNMkm",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "message": "={{ $json.message }}"
-          },
-          "matchingColumns": [
-            "message"
-          ],
-          "schema": [
-            {
-              "id": "message",
-              "displayName": "message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        3200,
-        -3296
-      ],
-      "id": "62e2162a-9a2d-40d7-bd6b-5b559ef670a1",
-      "name": "Call 'Redactor' body"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "H31FvFsoshAxNMkm",
-          "mode": "id",
-          "cachedResultUrl": "/workflow/H31FvFsoshAxNMkm"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "message": "={{ $json.message }}"
-          },
-          "matchingColumns": [
-            "message"
-          ],
-          "schema": [
-            {
-              "id": "message",
-              "displayName": "message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        3648,
-        -3296
-      ],
-      "id": "37a86454-32b0-4ddf-8d8c-fc3102be6e09",
-      "name": "Call 'Redactor' subject"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "4e29ac7b-6393-4a9f-b872-f1dbf654ef2e",
-              "leftValue": "={{ $json.messageId }}",
-              "rightValue": "=0",
-              "operator": {
-                "type": "boolean",
-                "operation": "notExists",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        2304,
-        -3264
-      ],
-      "id": "6b858cd6-511a-4d9a-b046-b883535a0fc9",
-      "name": "If message not in data table"
-    },
-    {
-      "parameters": {
-        "resource": "table",
-        "operation": "lookup",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Excel Config\\'').item.json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "table": {
-          "__rl": true,
-          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
-          "mode": "list",
-          "cachedResultName": "email"
-        },
-        "lookupColumn": "messageId",
-        "lookupValue": "={{ $('Start').item.json.id }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        2080,
-        -3264
-      ],
-      "id": "b222567c-996e-45d7-a4df-96736736d692",
-      "name": "Check same id",
-      "alwaysOutputData": false,
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "65241d6b-aa55-40e2-97ee-9b9b748dd0f1",
-              "leftValue": "={{ $json.status }}",
-              "rightValue": "unprompted",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        2528,
-        -2864
-      ],
-      "id": "32f8de29-eb93-4599-b7c7-b394fa2a8e2a",
-      "name": "If status is unprompted"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "f425b2db-5a16-468d-87e5-40037de5e321",
-              "leftValue": "={{ $('Check same id').item.json.status }}",
-              "rightValue": "unprompted",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        4544,
-        -3296
-      ],
-      "id": "9e2e6c60-7485-4b36-8469-6fca3ce53ec5",
-      "name": "if old status is unprompted"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "f425b2db-5a16-468d-87e5-40037de5e321",
-              "leftValue": "={{ $('Check same id').item.json.status }}",
-              "rightValue": "unprompted",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        4992,
-        -2880
-      ],
-      "id": "a61acb53-ece3-41d8-ae13-143f0663b14e",
-      "name": "if old status is unprompted1"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "b3OCuHLwF5yV7QDp",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
-          "cachedResultName": "Nudge Config"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        1856,
-        -3264
-      ],
-      "id": "413f1e2b-27d0-40c6-ab1a-f2820410c60b",
-      "name": "Call 'Nudge Excel Config'"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  messageId: $('Start').item.json.id,\n  conversationId: $('Start').item.json.conversationId,\n  subject: $('Start').item.json.subject,\n  recipient: $('Start').item.json.toRecipients[0].emailAddress.address,\n  sender: $('Start').item.json.sender_emailAddress_address,\n  sentTime: $('Start').item.json.sentDateTime,\n  originalSentTime: $('Start').item.json.sentDateTime,\n  status: \"unprompted\",\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4768,
-        -3104
-      ],
-      "id": "f3f69dd3-9337-466f-933f-b49a4d0cbf6d",
-      "name": "Prepare object to append"
-    },
-    {
-      "parameters": {
-        "resource": "table",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Excel Config\\'').item.json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "table": {
-          "__rl": true,
-          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
-          "mode": "list",
-          "cachedResultName": "email"
-        },
-        "dataMode": "autoMap",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        5440,
-        -2720
-      ],
-      "id": "458be16a-a686-42b5-80fe-d3a452216537",
-      "name": "(Pending or Skipped) Append rows to table",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "worksheet",
-        "operation": "update",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Excel Config\\'').item.json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "dataMode": "autoMap",
-        "columnToMatchOn": "=messageId",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        5440,
-        -2912
-      ],
-      "id": "dc2cf764-68fa-4c66-abd8-8ea2bfe9512f",
-      "name": "(Pending or Skipped) Update row",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const errJson = $('Is Prompt error').item.json;\nconst errOut = errJson?.output ?? {};\n\nconst shouldFollowUp = errJson.shouldFollowUp ?? errOut.shouldFollowUp;\nconst status = shouldFollowUp ? \"pending\" : \"skipped\";\n\nreturn {\n  messageId: $('Start').item.json.id,\n  status,\n  shouldFollowUp,\n  followUpMessage: $('if old status is unprompted1').item.json.storedMessage,\n  nextFollowUpAt: $('Get Followup time').item.json.nextFollowUpAt ?? $('Get Followup time').item.json.output.nextFollowUpAt,\n  urgency: errJson.urgency ?? errOut.urgency,\n  relationship: errJson.relationship ?? errOut.relationship,\n  nature: errJson.nature ?? errOut.nature,\n  timeSensitivity: errJson.timeSensitivity ?? errOut.timeSensitivity,\n  recommendedDelayInHours: errJson.recommendedDelayInHours ?? errOut.recommendedDelayInHours,\n  reason: errJson.reason ?? errOut.reason,\n  followUpCount: 0,\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        5216,
-        -2912
-      ],
-      "id": "86708de7-47d7-4e1c-9aa9-b48d0528a1ab",
-      "name": "Prepare object to append1"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const errJson = $('Is Prompt error').item.json;\nconst errOut = errJson?.output ?? {};\n\nconst shouldFollowUp = errJson.shouldFollowUp ?? errOut.shouldFollowUp;\nconst status = shouldFollowUp ? \"pending\" : \"skipped\";\n\nreturn {\n  messageId: $('Start').item.json.id,\n  conversationId: $('Start').item.json.conversationId,\n  subject: $('Start').item.json.subject,\n  recipient: $('Start').item.json.toRecipients[0].emailAddress.address,\n  sender: $('Start').item.json.sender_emailAddress_address,\n  sentTime: $('Start').item.json.sentDateTime,\n  originalSentTime: $('Start').item.json.sentDateTime,\n  status,\n  shouldFollowUp,\n  followUpMessage: $('if old status is unprompted1').item.json.storedMessage,\n  nextFollowUpAt: $('Get Followup time').item.json.nextFollowUpAt ?? $('Get Followup time').item.json.output.nextFollowUpAt,\n  urgency: errJson.urgency ?? errOut.urgency,\n  relationship: errJson.relationship ?? errOut.relationship,\n  nature: errJson.nature ?? errOut.nature,\n  timeSensitivity: errJson.timeSensitivity ?? errOut.timeSensitivity,\n  recommendedDelayInHours: errJson.recommendedDelayInHours ?? errOut.recommendedDelayInHours,\n  reason: errJson.reason ?? errOut.reason,\n  followUpCount: 0\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        5216,
-        -2720
-      ],
-      "id": "5768aee0-d343-4a1f-9598-78ee5ca4d1f6",
-      "name": "Prepare object to append2"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1632,
-        -3264
-      ],
-      "id": "ab8fa76c-5457-43aa-8a75-7b34edd9216a",
-      "name": "Edit Fields"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "58f60ab5-58bf-47ba-bb41-bcd60a86dbd8",
-              "name": "hasChange",
-              "value": false,
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        4768,
-        -3296
-      ],
-      "id": "1b7e408d-517c-4bd3-92ca-d7298c0223e6",
-      "name": "Set hasChange to False"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "58f60ab5-58bf-47ba-bb41-bcd60a86dbd8",
-              "name": "hasChange",
-              "value": true,
-              "type": "boolean"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        5664,
-        -2976
-      ],
-      "id": "69e4ce4b-858a-4f87-acfb-82b86cc5a580",
-      "name": "Set hasChange to true"
-    }
-  ],
-  "connections": {
-    "Get Followup time": {
-      "main": [
-        [
-          {
-            "node": "Insert redacted tokens",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare message body": {
-      "main": [
-        [
-          {
-            "node": "Call 'Redactor' body",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare message subject": {
-      "main": [
-        [
-          {
-            "node": "Call 'Redactor' subject",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Followup prompt'": {
-      "main": [
-        [
-          {
-            "node": "Is Prompt error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Clean Email body": {
-      "main": [
-        [
-          {
-            "node": "Prepare message body",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare redacted subject": {
-      "main": [
-        [
-          {
-            "node": "Call 'Followup prompt'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert redacted tokens": {
-      "main": [
-        [
-          {
-            "node": "if old status is unprompted1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is Prompt error": {
-      "main": [
-        [
-          {
-            "node": "if old status is unprompted",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Get Followup time",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Start": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Redactor' body": {
-      "main": [
-        [
-          {
-            "node": "Prepare message subject",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Redactor' subject": {
-      "main": [
-        [
-          {
-            "node": "Prepare redacted subject",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check same id": {
-      "main": [
-        [
-          {
-            "node": "If message not in data table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If message not in data table": {
-      "main": [
-        [
-          {
-            "node": "Clean Email body",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "If status is unprompted",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If status is unprompted": {
-      "main": [
-        [
-          {
-            "node": "Clean Email body",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Set hasChange to False",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "if old status is unprompted": {
-      "main": [
-        [
-          {
-            "node": "Set hasChange to False",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Prepare object to append",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "if old status is unprompted1": {
-      "main": [
-        [
-          {
-            "node": "Prepare object to append1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Prepare object to append2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Nudge Excel Config'": {
-      "main": [
-        [
-          {
-            "node": "Check same id",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare object to append": {
-      "main": [
-        [
-          {
-            "node": "(Unprompted) Append rows to table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "(Pending or Skipped) Append rows to table": {
-      "main": [
-        [
-          {
-            "node": "Set hasChange to true",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare object to append1": {
-      "main": [
-        [
-          {
-            "node": "(Pending or Skipped) Update row",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare object to append2": {
-      "main": [
-        [
-          {
-            "node": "(Pending or Skipped) Append rows to table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Call 'Nudge Excel Config'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "(Unprompted) Append rows to table": {
-      "main": [
-        [
-          {
-            "node": "Set hasChange to true",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "(Pending or Skipped) Update row": {
-      "main": [
-        [
-          {
-            "node": "Set hasChange to true",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false,
-    "binaryMode": "separate"
-  },
-  "staticData": null,
-  "meta": null,
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "b5115433-e643-4252-80ad-7633722ac9e0",
-  "activeVersionId": "12503eea-5052-4f71-9dd2-908428e96401",
-  "versionCounter": 683,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-04-21T11:40:32.921Z",
-      "createdAt": "2026-04-21T11:40:32.921Z",
-      "id": "AdmOOQj7jhgPkkAA",
-      "name": "Nudge"
-    },
-    {
-      "updatedAt": "2026-05-21T03:33:36.033Z",
-      "createdAt": "2026-05-21T03:33:36.033Z",
-      "id": "FDr9UduSpa2ppJVf",
-      "name": "Helper"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-06-12T11:54:16.432Z",
-      "createdAt": "2026-06-12T11:54:16.432Z",
-      "role": "workflow:owner",
-      "workflowId": "6lw2gHUZtHefh763",
-      "projectId": "rRCGWY99DWwNBygs",
-      "project": {
-        "updatedAt": "2026-06-12T11:53:00.215Z",
-        "createdAt": "2026-06-12T11:51:48.599Z",
-        "id": "rRCGWY99DWwNBygs",
-        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
-  }
+﻿{
+    "updatedAt":  "2026-06-28T06:26:13.770Z",
+    "createdAt":  "2026-04-21T10:58:59.786Z",
+    "id":  "6lw2gHUZtHefh763",
+    "name":  "Nudge Record data",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "// Get inputs from previous nodes\nconst openPeriods = $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.openPeriods;\nconst sentDay = new Date($(\u0027Start\u0027).item.json.sentDateTime);\n\nconst rawDelay = Number($json.recommendedDelayInHours ?? $json.output.recommendedDelayInHours);\nconst shouldFollowUp = ($json.shouldFollowUp ?? $json.output.shouldFollowUp);\n\n// Early exit if no follow-up needed\nif (!shouldFollowUp) {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  };\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay \u003c= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, rawDelay);\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour \u003e= 24) {\n    // rollover to next dayâ€™s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 \u003c 0 || int0 \u003e 23 || int1 \u003c 0 || int1 \u003e 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i \u003c= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) =\u003e a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time \u003c= min) return min;\n    if (time \u003e max) return min + 24; // next dayâ€™s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val \u003e= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4544,
+                                       -2912
+                                   ],
+                      "id":  "5b73a28f-215b-4d98-8d25-5c7332868412",
+                      "name":  "Get Followup time",
+                      "alwaysOutputData":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "// Get inputs\nlet text = ($(\u0027Is Prompt error\u0027).item.json.followupMessage ?? \n           $(\u0027Is Prompt error\u0027).item.json.output?.followupMessage) || \u0027\u0027;\n\ntext += \"/n/n\" + $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.aiWarningText;\n\nlet tokens = $(\u0027Call \\\u0027Redactor\\\u0027 body\u0027).item.json.tokenMap;\n\n// Ensure tokens is an object\nif (typeof tokens === \u0027string\u0027) {\n  try {\n    tokens = JSON.parse(tokens);\n  } catch (err) {\n    tokens = {};\n  }\n}\nif (!tokens || typeof tokens !== \u0027object\u0027) {\n  tokens = {};\n}\n\n// Escape regex special characters\nfunction escapeRegex(str) {\n  if (typeof str !== \u0027string\u0027) return \u0027\u0027;\n  return str.replace(/[.*+?^${}()|[\\]\\\\]/g, \u0027\\\\$\u0026\u0027);\n}\n\n// Replace tokens safely\nfor (const key in tokens) {\n  // Skip invalid keys\n  if (typeof key !== \u0027string\u0027 || !key.trim()) continue;\n\n  const value = tokens[key];\n\n  // Skip invalid values\n  if (typeof value !== \u0027string\u0027) continue;\n\n  let replacement = value;\n\n  // URL handling (optional â€” here just passes through)\n  if (value.startsWith(\u0027http://\u0027) || value.startsWith(\u0027https://\u0027)) {\n    replacement = `\u003ca href=\"${value}\"\u003e${value}\u003c/a\u003e`;\n  }\n\n  const regex = new RegExp(escapeRegex(key), \u0027g\u0027);\n  text = text.replace(regex, replacement);\n}\n\n// Return result\nreturn {\n  storedMessage: text\n};\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4768,
+                                       -2880
+                                   ],
+                      "id":  "e0e6d2a1-a4bb-4b6e-a29a-2533c9a503b9",
+                      "name":  "Insert redacted tokens"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "00895110-f749-4389-bd85-93bc6d638cba",
+                                                                                     "name":  "message",
+                                                                                     "value":  "={{ $(\u0027Start\u0027).item.json.subject }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       3424,
+                                       -3296
+                                   ],
+                      "id":  "9688846b-78ae-49f9-bd55-9098c0894ba2",
+                      "name":  "Prepare message subject"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "00895110-f749-4389-bd85-93bc6d638cba",
+                                                                                     "name":  "message",
+                                                                                     "value":  "={{ $json.body }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       2976,
+                                       -3296
+                                   ],
+                      "id":  "837b4302-770e-4de5-8c64-e3c387f7070c",
+                      "name":  "Prepare message body"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "CTJriku4JvV2LFqf",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/workflow/CTJriku4JvV2LFqf",
+                                                            "cachedResultName":  "Nudge Decision prompt"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+                                                                              "subject":  "={{ $json.redactedSubject }}",
+                                                                              "body":  "={{ $(\u0027Call \\\u0027Redactor\\\u0027 body\u0027).item.json.redactedBody }}",
+                                                                              "sentTime":  "={{ $(\u0027Start\u0027).item.json.sentDateTime }}"
+                                                                          },
+                                                                "matchingColumns":  [
+
+                                                                                    ],
+                                                                "schema":  [
+                                                                               {
+                                                                                   "id":  "subject",
+                                                                                   "displayName":  "subject",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "type":  "string"
+                                                                               },
+                                                                               {
+                                                                                   "id":  "body",
+                                                                                   "displayName":  "body",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "type":  "string"
+                                                                               },
+                                                                               {
+                                                                                   "id":  "sentTime",
+                                                                                   "displayName":  "sentTime",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "type":  "string",
+                                                                                   "removed":  false
+                                                                               }
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       4096,
+                                       -3296
+                                   ],
+                      "id":  "616c3d0a-e633-49b4-8415-07307896c80f",
+                      "name":  "Call \u0027Followup prompt\u0027",
+                      "retryOnFail":  false,
+                      "onError":  "continueRegularOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "let html = $(\u0027Start\u0027).item.json.body_content;\n\n// Remove scripts/styles\nhtml = html.replace(/\u003cstyle[\\s\\S]*?\u003c\\/style\u003e/gi, \u0027\u0027);\nhtml = html.replace(/\u003cscript[\\s\\S]*?\u003c\\/script\u003e/gi, \u0027\u0027);\n\n// Replace \u003cbr\u003e and block tags with newlines\nhtml = html.replace(/\u003cbr\\s*\\/?\u003e/gi, \u0027\\n\u0027);\nhtml = html.replace(/\u003c\\/div\u003e/gi, \u0027\\n\u0027);\nhtml = html.replace(/\u003c\\/p\u003e/gi, \u0027\\n\u0027);\n\n// Remove all remaining HTML tags\nlet text = html.replace(/\u003c[^\u003e]+\u003e/g, \u0027\u0027);\n\n// Decode basic HTML entities\ntext = text\n  .replace(/\u0026nbsp;/g, \u0027 \u0027)\n  .replace(/\u0026amp;/g, \u0027\u0026\u0027)\n  .replace(/\u0026lt;/g, \u0027\u003c\u0027)\n  .replace(/\u0026gt;/g, \u0027\u003e\u0027);\n\n// Clean extra whitespace\ntext = text.replace(/\\n\\s*\\n/g, \u0027\\n\\n\u0027).trim();\n\nreturn {\n  body: text\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2752,
+                                       -3296
+                                   ],
+                      "id":  "49d653ff-3976-421b-a835-2282ac6b2284",
+                      "name":  "Clean Email body"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "c653c279-33b1-49f6-8d54-9c4dc05c4a2b",
+                                                                                     "name":  "redactedSubject",
+                                                                                     "value":  "={{ $json.redactedBody }}",
+                                                                                     "type":  "string"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       3872,
+                                       -3296
+                                   ],
+                      "id":  "e4371791-c459-42cf-b65b-22ca165f2e12",
+                      "name":  "Prepare redacted subject"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "03c9bc69-64da-4b19-ac03-c58ab0dadca2",
+                                                                                   "leftValue":  "={{ $json.error ?? $json?.output?.error }}",
+                                                                                   "rightValue":  "",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "notEmpty",
+                                                                                                    "singleValue":  true
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       4320,
+                                       -3296
+                                   ],
+                      "id":  "335f5377-e53d-4d12-8e95-7e3215077a74",
+                      "name":  "Is Prompt error"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "table",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "email"
+                                                   },
+                                         "dataMode":  "autoMap",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       4992,
+                                       -3104
+                                   ],
+                      "id":  "c61e9ddc-1699-4b0a-b2a2-919888ccd7aa",
+                      "name":  "(Unprompted) Append rows to table"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowInputs":  {
+                                                                "values":  [
+                                                                               {
+                                                                                   "name":  "sentDateTime",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "subject",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "body_content",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "id",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "conversationId",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "toRecipients",
+                                                                                   "type":  "any"
+                                                                               },
+                                                                               {
+                                                                                   "name":  "sender_emailAddress_address",
+                                                                                   "type":  "any"
+                                                                               }
+                                                                           ]
+                                                            }
+                                     },
+                      "id":  "a8f59f75-7620-4c20-9a5b-c35a6223227e",
+                      "typeVersion":  1.1,
+                      "name":  "Start",
+                      "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                      "position":  [
+                                       1408,
+                                       -3264
+                                   ]
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "H31FvFsoshAxNMkm",
+                                                            "mode":  "id"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+                                                                              "message":  "={{ $json.message }}"
+                                                                          },
+                                                                "matchingColumns":  [
+                                                                                        "message"
+                                                                                    ],
+                                                                "schema":  [
+                                                                               {
+                                                                                   "id":  "message",
+                                                                                   "displayName":  "message",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "type":  "string",
+                                                                                   "removed":  false
+                                                                               }
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       3200,
+                                       -3296
+                                   ],
+                      "id":  "62e2162a-9a2d-40d7-bd6b-5b559ef670a1",
+                      "name":  "Call \u0027Redactor\u0027 body"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "H31FvFsoshAxNMkm",
+                                                            "mode":  "id",
+                                                            "cachedResultUrl":  "/workflow/H31FvFsoshAxNMkm"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+                                                                              "message":  "={{ $json.message }}"
+                                                                          },
+                                                                "matchingColumns":  [
+                                                                                        "message"
+                                                                                    ],
+                                                                "schema":  [
+                                                                               {
+                                                                                   "id":  "message",
+                                                                                   "displayName":  "message",
+                                                                                   "required":  false,
+                                                                                   "defaultMatch":  false,
+                                                                                   "display":  true,
+                                                                                   "canBeUsedToMatch":  true,
+                                                                                   "type":  "string",
+                                                                                   "removed":  false
+                                                                               }
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       3648,
+                                       -3296
+                                   ],
+                      "id":  "37a86454-32b0-4ddf-8d8c-fc3102be6e09",
+                      "name":  "Call \u0027Redactor\u0027 subject"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "loose",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "4e29ac7b-6393-4a9f-b872-f1dbf654ef2e",
+                                                                                   "leftValue":  "={{ $json.messageId }}",
+                                                                                   "rightValue":  "=0",
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "notExists",
+                                                                                                    "singleValue":  true
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "looseTypeValidation":  true,
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       2304,
+                                       -3264
+                                   ],
+                      "id":  "6b858cd6-511a-4d9a-b046-b883535a0fc9",
+                      "name":  "If message not in data table"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "table",
+                                         "operation":  "lookup",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "email"
+                                                   },
+                                         "lookupColumn":  "messageId",
+                                         "lookupValue":  "={{ $(\u0027Start\u0027).item.json.id }}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       2080,
+                                       -3264
+                                   ],
+                      "id":  "b222567c-996e-45d7-a4df-96736736d692",
+                      "name":  "Check same id",
+                      "alwaysOutputData":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "65241d6b-aa55-40e2-97ee-9b9b748dd0f1",
+                                                                                   "leftValue":  "={{ $json.status }}",
+                                                                                   "rightValue":  "unprompted",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       2528,
+                                       -2864
+                                   ],
+                      "id":  "32f8de29-eb93-4599-b7c7-b394fa2a8e2a",
+                      "name":  "If status is unprompted"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "f425b2db-5a16-468d-87e5-40037de5e321",
+                                                                                   "leftValue":  "={{ $(\u0027Check same id\u0027).item.json.status }}",
+                                                                                   "rightValue":  "unprompted",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals",
+                                                                                                    "name":  "filter.operator.equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       4544,
+                                       -3296
+                                   ],
+                      "id":  "9e2e6c60-7485-4b36-8469-6fca3ce53ec5",
+                      "name":  "if old status is unprompted"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "f425b2db-5a16-468d-87e5-40037de5e321",
+                                                                                   "leftValue":  "={{ $(\u0027Check same id\u0027).item.json.status }}",
+                                                                                   "rightValue":  "unprompted",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals",
+                                                                                                    "name":  "filter.operator.equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       4992,
+                                       -2880
+                                   ],
+                      "id":  "a61acb53-ece3-41d8-ae13-143f0663b14e",
+                      "name":  "if old status is unprompted1"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "b3OCuHLwF5yV7QDp",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/workflow/b3OCuHLwF5yV7QDp",
+                                                            "cachedResultName":  "Nudge Config"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+
+                                                                          },
+                                                                "matchingColumns":  [
+
+                                                                                    ],
+                                                                "schema":  [
+
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       1856,
+                                       -3264
+                                   ],
+                      "id":  "413f1e2b-27d0-40c6-ab1a-f2820410c60b",
+                      "name":  "Call \u0027Nudge Excel Config\u0027"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "return {\n  messageId: $(\u0027Start\u0027).item.json.id,\n  conversationId: $(\u0027Start\u0027).item.json.conversationId,\n  subject: $(\u0027Start\u0027).item.json.subject,\n  recipient: $(\u0027Start\u0027).item.json.toRecipients[0].emailAddress.address,\n  sender: $(\u0027Start\u0027).item.json.sender_emailAddress_address,\n  sentTime: $(\u0027Start\u0027).item.json.sentDateTime,\n  originalSentTime: $(\u0027Start\u0027).item.json.sentDateTime,\n  status: \"unprompted\",\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4768,
+                                       -3104
+                                   ],
+                      "id":  "f3f69dd3-9337-466f-933f-b49a4d0cbf6d",
+                      "name":  "Prepare object to append"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "table",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "email"
+                                                   },
+                                         "dataMode":  "autoMap",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       5440,
+                                       -2720
+                                   ],
+                      "id":  "458be16a-a686-42b5-80fe-d3a452216537",
+                      "name":  "(Pending or Skipped) Append rows to table"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "worksheet",
+                                         "operation":  "update",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Excel Config\\\u0027\u0027).item.json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "dataMode":  "autoMap",
+                                         "columnToMatchOn":  "=messageId",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       5440,
+                                       -2912
+                                   ],
+                      "id":  "dc2cf764-68fa-4c66-abd8-8ea2bfe9512f",
+                      "name":  "(Pending or Skipped) Update row"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const errJson = $(\u0027Is Prompt error\u0027).item.json;\nconst errOut = errJson?.output ?? {};\n\nconst shouldFollowUp = errJson.shouldFollowUp ?? errOut.shouldFollowUp;\nconst status = shouldFollowUp ? \"pending\" : \"skipped\";\n\nreturn {\n  messageId: $(\u0027Start\u0027).item.json.id,\n  status,\n  shouldFollowUp,\n  followUpMessage: $(\u0027if old status is unprompted1\u0027).item.json.storedMessage,\n  nextFollowUpAt: $(\u0027Get Followup time\u0027).item.json.nextFollowUpAt ?? $(\u0027Get Followup time\u0027).item.json.output.nextFollowUpAt,\n  urgency: errJson.urgency ?? errOut.urgency,\n  relationship: errJson.relationship ?? errOut.relationship,\n  nature: errJson.nature ?? errOut.nature,\n  timeSensitivity: errJson.timeSensitivity ?? errOut.timeSensitivity,\n  recommendedDelayInHours: errJson.recommendedDelayInHours ?? errOut.recommendedDelayInHours,\n  reason: errJson.reason ?? errOut.reason,\n  followUpCount: 0,\n};\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       5216,
+                                       -2912
+                                   ],
+                      "id":  "86708de7-47d7-4e1c-9aa9-b48d0528a1ab",
+                      "name":  "Prepare object to append1"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const errJson = $(\u0027Is Prompt error\u0027).item.json;\nconst errOut = errJson?.output ?? {};\n\nconst shouldFollowUp = errJson.shouldFollowUp ?? errOut.shouldFollowUp;\nconst status = shouldFollowUp ? \"pending\" : \"skipped\";\n\nreturn {\n  messageId: $(\u0027Start\u0027).item.json.id,\n  conversationId: $(\u0027Start\u0027).item.json.conversationId,\n  subject: $(\u0027Start\u0027).item.json.subject,\n  recipient: $(\u0027Start\u0027).item.json.toRecipients[0].emailAddress.address,\n  sender: $(\u0027Start\u0027).item.json.sender_emailAddress_address,\n  sentTime: $(\u0027Start\u0027).item.json.sentDateTime,\n  originalSentTime: $(\u0027Start\u0027).item.json.sentDateTime,\n  status,\n  shouldFollowUp,\n  followUpMessage: $(\u0027if old status is unprompted1\u0027).item.json.storedMessage,\n  nextFollowUpAt: $(\u0027Get Followup time\u0027).item.json.nextFollowUpAt ?? $(\u0027Get Followup time\u0027).item.json.output.nextFollowUpAt,\n  urgency: errJson.urgency ?? errOut.urgency,\n  relationship: errJson.relationship ?? errOut.relationship,\n  nature: errJson.nature ?? errOut.nature,\n  timeSensitivity: errJson.timeSensitivity ?? errOut.timeSensitivity,\n  recommendedDelayInHours: errJson.recommendedDelayInHours ?? errOut.recommendedDelayInHours,\n  reason: errJson.reason ?? errOut.reason,\n  followUpCount: 0\n};\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       5216,
+                                       -2720
+                                   ],
+                      "id":  "5768aee0-d343-4a1f-9598-78ee5ca4d1f6",
+                      "name":  "Prepare object to append2"
+                  },
+                  {
+                      "parameters":  {
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       1632,
+                                       -3264
+                                   ],
+                      "id":  "ab8fa76c-5457-43aa-8a75-7b34edd9216a",
+                      "name":  "Edit Fields"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "58f60ab5-58bf-47ba-bb41-bcd60a86dbd8",
+                                                                                     "name":  "hasChange",
+                                                                                     "value":  false,
+                                                                                     "type":  "boolean"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       4768,
+                                       -3296
+                                   ],
+                      "id":  "1b7e408d-517c-4bd3-92ca-d7298c0223e6",
+                      "name":  "Set hasChange to False"
+                  },
+                  {
+                      "parameters":  {
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "58f60ab5-58bf-47ba-bb41-bcd60a86dbd8",
+                                                                                     "name":  "hasChange",
+                                                                                     "value":  true,
+                                                                                     "type":  "boolean"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       5664,
+                                       -2976
+                                   ],
+                      "id":  "69e4ce4b-858a-4f87-acfb-82b86cc5a580",
+                      "name":  "Set hasChange to true"
+                  }
+              ],
+    "connections":  {
+                        "Get Followup time":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Insert redacted tokens",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Prepare message body":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Call \u0027Redactor\u0027 body",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Prepare message subject":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Call \u0027Redactor\u0027 subject",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Call \u0027Followup prompt\u0027":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Is Prompt error",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             },
+                        "Clean Email body":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Prepare message body",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Prepare redacted subject":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Call \u0027Followup prompt\u0027",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "Insert redacted tokens":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "if old status is unprompted1",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Is Prompt error":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "if old status is unprompted",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "Get Followup time",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Start":  {
+                                      "main":  [
+                                                   [
+                                                       {
+                                                           "node":  "Edit Fields",
+                                                           "type":  "main",
+                                                           "index":  0
+                                                       }
+                                                   ]
+                                               ]
+                                  },
+                        "Call \u0027Redactor\u0027 body":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "Prepare message subject",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "Call \u0027Redactor\u0027 subject":  {
+                                                                  "main":  [
+                                                                               [
+                                                                                   {
+                                                                                       "node":  "Prepare redacted subject",
+                                                                                       "type":  "main",
+                                                                                       "index":  0
+                                                                                   }
+                                                                               ]
+                                                                           ]
+                                                              },
+                        "Check same id":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "If message not in data table",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "If message not in data table":  {
+                                                             "main":  [
+                                                                          [
+                                                                              {
+                                                                                  "node":  "Clean Email body",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ],
+                                                                          [
+                                                                              {
+                                                                                  "node":  "If status is unprompted",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ]
+                                                                      ]
+                                                         },
+                        "If status is unprompted":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Clean Email body",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ],
+                                                                     [
+                                                                         {
+                                                                             "node":  "Set hasChange to False",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "if old status is unprompted":  {
+                                                            "main":  [
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Set hasChange to False",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ],
+                                                                         [
+                                                                             {
+                                                                                 "node":  "Prepare object to append",
+                                                                                 "type":  "main",
+                                                                                 "index":  0
+                                                                             }
+                                                                         ]
+                                                                     ]
+                                                        },
+                        "if old status is unprompted1":  {
+                                                             "main":  [
+                                                                          [
+                                                                              {
+                                                                                  "node":  "Prepare object to append1",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ],
+                                                                          [
+                                                                              {
+                                                                                  "node":  "Prepare object to append2",
+                                                                                  "type":  "main",
+                                                                                  "index":  0
+                                                                              }
+                                                                          ]
+                                                                      ]
+                                                         },
+                        "Call \u0027Nudge Excel Config\u0027":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Check same id",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                },
+                        "Prepare object to append":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "(Unprompted) Append rows to table",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "(Pending or Skipped) Append rows to table":  {
+                                                                          "main":  [
+                                                                                       [
+                                                                                           {
+                                                                                               "node":  "Set hasChange to true",
+                                                                                               "type":  "main",
+                                                                                               "index":  0
+                                                                                           }
+                                                                                       ]
+                                                                                   ]
+                                                                      },
+                        "Prepare object to append1":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "(Pending or Skipped) Update row",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Prepare object to append2":  {
+                                                          "main":  [
+                                                                       [
+                                                                           {
+                                                                               "node":  "(Pending or Skipped) Append rows to table",
+                                                                               "type":  "main",
+                                                                               "index":  0
+                                                                           }
+                                                                       ]
+                                                                   ]
+                                                      },
+                        "Edit Fields":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "Call \u0027Nudge Excel Config\u0027",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "(Unprompted) Append rows to table":  {
+                                                                  "main":  [
+                                                                               [
+                                                                                   {
+                                                                                       "node":  "Set hasChange to true",
+                                                                                       "type":  "main",
+                                                                                       "index":  0
+                                                                                   }
+                                                                               ]
+                                                                           ]
+                                                              },
+                        "(Pending or Skipped) Update row":  {
+                                                                "main":  [
+                                                                             [
+                                                                                 {
+                                                                                     "node":  "Set hasChange to true",
+                                                                                     "type":  "main",
+                                                                                     "index":  0
+                                                                                 }
+                                                                             ]
+                                                                         ]
+                                                            }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "availableInMCP":  false,
+                     "binaryMode":  "separate"
+                 },
+    "staticData":  null,
+    "meta":  null,
+    "nodeGroups":  [
+
+                   ],
+    "pinData":  {
+
+                },
+    "versionId":  "b5115433-e643-4252-80ad-7633722ac9e0",
+    "activeVersionId":  "12503eea-5052-4f71-9dd2-908428e96401",
+    "versionCounter":  683,
+    "triggerCount":  0,
+    "sourceWorkflowId":  null,
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-04-21T11:40:32.921Z",
+                     "createdAt":  "2026-04-21T11:40:32.921Z",
+                     "id":  "AdmOOQj7jhgPkkAA",
+                     "name":  "Nudge"
+                 },
+                 {
+                     "updatedAt":  "2026-05-21T03:33:36.033Z",
+                     "createdAt":  "2026-05-21T03:33:36.033Z",
+                     "id":  "FDr9UduSpa2ppJVf",
+                     "name":  "Helper"
+                 }
+             ],
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-06-12T11:54:16.432Z",
+                       "createdAt":  "2026-06-12T11:54:16.432Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "6lw2gHUZtHefh763",
+                       "projectId":  "rRCGWY99DWwNBygs",
+                       "project":  {
+                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
+                                       "createdAt":  "2026-06-12T11:51:48.599Z",
+                                       "id":  "rRCGWY99DWwNBygs",
+                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "customTelemetryTags":  [
+
+                                                               ],
+                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+                                   }
+                   }
+               ],
+    "versionMetadata":  {
+                            "name":  null,
+                            "description":  null
+                        }
 }

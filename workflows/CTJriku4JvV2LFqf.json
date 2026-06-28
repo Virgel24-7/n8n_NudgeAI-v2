@@ -1,198 +1,202 @@
-{
-  "updatedAt": "2026-06-28T03:31:53.550Z",
-  "createdAt": "2026-04-15T05:45:49.124Z",
-  "id": "CTJriku4JvV2LFqf",
-  "name": "Nudge Decision prompt",
-  "description": null,
-  "active": true,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=You are an AI assistant that determines when a follow-up email should be sent and the followup message. The followup message is to be sent after recommendedDelayInHours from Current Time, but the content is based from Sent Time, so the content should feel like so. Use the redacted values wisely. Copy the same format as original body but replace newlines with '/n'. Keep the number of consecutive newlines when trying to copy same format.\n\nAnalyze the email context and classify it based on the following factors:\n\n1. Urgency:\n- high: blocking issue, customer problem, revenue-impacting\n- medium: expected response but not critical\n- low: optional or informational\n\n2. Relationship:\n- internal: same company\n- external: customer/client\n- VIP: high-value client or priority account\n- cold: no prior relationship or outreach\n\n3. Nature of the email:\n- support: resolving an issue/problem\n- sales: trying to close or move forward\n- info: providing information only\n- decision: waiting for approval or confirmation\n\n4. Time Sensitivity:\n- immediate: action expected within hours\n- short: action expected within 1–3 Hours\n- long: action expected within a week or more\n- none: no clear deadline\n\nThen determine:\n- whether a follow-up is needed (true/false)\n- recommended delay before follow-up (in hours or Hours)\n\nRules:\n- Do NOT recommend follow-up if the email is gibberish or is purely informational with no action required regardless if external or internal.\n- Do NOT prioritize follow-up if email explicitly states to only let them know if recipient encountered an issue.\n- Do NOT follow-up just to confirm if resolution is satisfactory. The recipient will normally just reply by themselves if they find an issue.\n- Prioritize faster follow-ups for high urgency + external/VIP\n- Avoid aggressive follow-ups for low urgency or internal messages\n- Ensure that the followupMessage tone matches the recommendedDelayInHours.\n  - shorter delay -> lighter nudge\n  - longer delay -> stronger follow-up\n\nCRITICAL RULE:\nDo NOT modify placeholder tokens such as __URL_0__, __EMAIL_0__, etc.\n- Do not add new placeholder tokens\n- Do not rename them\n- Do not partially rewrite them\n- Do not add/remove characters\n- Always copy them EXACTLY as provided\n- Keep reason to a short 1-2 sentences long\n\nReturn your answer in JSON format:\n\n{\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 12,\n  \"followupMessage\": \"...\",\n  \"reason\": \"...\"\n}\n\nEmail:\n---\nSent Time: {{ $json.sentTime }}\nCurrent Time: {{ new Date().toISOString().replace(/\\.\\d{3}Z$/, 'Z') }}\n{{ $json.subject }}\n\n{{ $json.body }}\n---",
-        "hasOutputParser": true,
-        "batching": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.9,
-      "position": [
-        224,
-        208
-      ],
-      "id": "13c02cda-0348-424a-b63c-bd51b6d65e67",
-      "name": "Basic LLM Chain",
-      "alwaysOutputData": true,
-      "retryOnFail": true,
-      "notesInFlow": false,
-      "maxTries": null,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "jsonSchemaExample": "{\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 24,\n  \"followupMessage\": \"...\",\n  \"reason\": \"...\"\n}",
-        "autoFix": true
-      },
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
-      "position": [
-        304,
-        432
-      ],
-      "id": "131e5531-54cf-431c-b819-433ae2c54642",
-      "name": "Structured Output Parser"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        304,
-        640
-      ],
-      "id": "1bf2b44f-4eba-486b-8d9f-382e63e5705a",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "SLt5sy0uDoolli5G",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "inputSource": "jsonExample",
-        "jsonExample": "{\n  \"subject\":\"\",\n  \"body\":\"\",\n  \"sentTime\":\"\"\n}"
-      },
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        0,
-        208
-      ],
-      "id": "552c7261-35ac-483c-85df-2d8572489217",
-      "name": "Start",
-      "executeOnce": false
-    },
-    {
-      "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={\n\"output\": {\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 7,\n  \"followupMessage\": \"{{ Math.random() }} - Reply: {{ $json.body }}\",\n  \"reason\": \"{{ $json.subject }}\"\n}\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        224,
-        32
-      ],
-      "id": "64d8f7a8-4753-47e7-9789-4765f2fee337",
-      "name": "Edit Fields"
-    }
-  ],
-  "connections": {
-    "Structured Output Parser": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "ai_outputParser",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Structured Output Parser",
-            "type": "ai_languageModel",
-            "index": 0
-          },
-          {
-            "node": "Basic LLM Chain",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Start": {
-      "main": [
-        [
-          {
-            "node": "Basic LLM Chain",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
-  },
-  "staticData": null,
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {
-    "Start": [
-      {
-        "json": {
-          "subject": "Login password reset link.",
-          "body": "​Good day,\n\nHere is the link to reset your login password.\n\n__URL_0__.\n\nPlease let us know if there are problems or concerns with resetting.",
-          "sentTime": "2026-05-22T02:50:11Z"
-        }
-      }
-    ]
-  },
-  "versionId": "7042cc5f-bb92-45ef-b69f-7285c8eef343",
-  "activeVersionId": "7042cc5f-bb92-45ef-b69f-7285c8eef343",
-  "versionCounter": 262,
-  "triggerCount": 0,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-04-21T11:40:32.921Z",
-      "createdAt": "2026-04-21T11:40:32.921Z",
-      "id": "AdmOOQj7jhgPkkAA",
-      "name": "Nudge"
-    },
-    {
-      "updatedAt": "2026-05-21T03:33:36.033Z",
-      "createdAt": "2026-05-21T03:33:36.033Z",
-      "id": "FDr9UduSpa2ppJVf",
-      "name": "Helper"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-06-12T11:54:16.517Z",
-      "createdAt": "2026-06-12T11:54:16.517Z",
-      "role": "workflow:owner",
-      "workflowId": "CTJriku4JvV2LFqf",
-      "projectId": "rRCGWY99DWwNBygs",
-      "project": {
-        "updatedAt": "2026-06-12T11:53:00.215Z",
-        "createdAt": "2026-06-12T11:51:48.599Z",
-        "id": "rRCGWY99DWwNBygs",
-        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": "Version 7042cc5f",
-    "description": ""
-  }
+﻿{
+    "updatedAt":  "2026-06-28T03:31:53.550Z",
+    "createdAt":  "2026-04-15T05:45:49.124Z",
+    "id":  "CTJriku4JvV2LFqf",
+    "name":  "Nudge Decision prompt",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "promptType":  "define",
+                                         "text":  "=You are an AI assistant that determines when a follow-up email should be sent and the followup message. The followup message is to be sent after recommendedDelayInHours from Current Time, but the content is based from Sent Time, so the content should feel like so. Use the redacted values wisely. Copy the same format as original body but replace newlines with \u0027/n\u0027. Keep the number of consecutive newlines when trying to copy same format.\n\nAnalyze the email context and classify it based on the following factors:\n\n1. Urgency:\n- high: blocking issue, customer problem, revenue-impacting\n- medium: expected response but not critical\n- low: optional or informational\n\n2. Relationship:\n- internal: same company\n- external: customer/client\n- VIP: high-value client or priority account\n- cold: no prior relationship or outreach\n\n3. Nature of the email:\n- support: resolving an issue/problem\n- sales: trying to close or move forward\n- info: providing information only\n- decision: waiting for approval or confirmation\n\n4. Time Sensitivity:\n- immediate: action expected within hours\n- short: action expected within 1â€“3 Hours\n- long: action expected within a week or more\n- none: no clear deadline\n\nThen determine:\n- whether a follow-up is needed (true/false)\n- recommended delay before follow-up (in hours or Hours)\n\nRules:\n- Do NOT recommend follow-up if the email is gibberish or is purely informational with no action required regardless if external or internal.\n- Do NOT prioritize follow-up if email explicitly states to only let them know if recipient encountered an issue.\n- Do NOT follow-up just to confirm if resolution is satisfactory. The recipient will normally just reply by themselves if they find an issue.\n- Prioritize faster follow-ups for high urgency + external/VIP\n- Avoid aggressive follow-ups for low urgency or internal messages\n- Ensure that the followupMessage tone matches the recommendedDelayInHours.\n  - shorter delay -\u003e lighter nudge\n  - longer delay -\u003e stronger follow-up\n\nCRITICAL RULE:\nDo NOT modify placeholder tokens such as __URL_0__, __EMAIL_0__, etc.\n- Do not add new placeholder tokens\n- Do not rename them\n- Do not partially rewrite them\n- Do not add/remove characters\n- Always copy them EXACTLY as provided\n- Keep reason to a short 1-2 sentences long\n\nReturn your answer in JSON format:\n\n{\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 12,\n  \"followupMessage\": \"...\",\n  \"reason\": \"...\"\n}\n\nEmail:\n---\nSent Time: {{ $json.sentTime }}\nCurrent Time: {{ new Date().toISOString().replace(/\\.\\d{3}Z$/, \u0027Z\u0027) }}\n{{ $json.subject }}\n\n{{ $json.body }}\n---",
+                                         "hasOutputParser":  true,
+                                         "batching":  {
+
+                                                      }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.chainLlm",
+                      "typeVersion":  1.9,
+                      "position":  [
+                                       224,
+                                       208
+                                   ],
+                      "id":  "13c02cda-0348-424a-b63c-bd51b6d65e67",
+                      "name":  "Basic LLM Chain",
+                      "alwaysOutputData":  true,
+                      "retryOnFail":  true,
+                      "notesInFlow":  false,
+                      "maxTries":  null,
+                      "onError":  "continueRegularOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsonSchemaExample":  "{\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 24,\n  \"followupMessage\": \"...\",\n  \"reason\": \"...\"\n}",
+                                         "autoFix":  true
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.outputParserStructured",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       304,
+                                       432
+                                   ],
+                      "id":  "131e5531-54cf-431c-b819-433ae2c54642",
+                      "name":  "Structured Output Parser"
+                  },
+                  {
+                      "parameters":  {
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+                      "typeVersion":  1,
+                      "position":  [
+                                       304,
+                                       640
+                                   ],
+                      "id":  "1bf2b44f-4eba-486b-8d9f-382e63e5705a",
+                      "name":  "Google Gemini Chat Model"
+                  },
+                  {
+                      "parameters":  {
+                                         "inputSource":  "jsonExample",
+                                         "jsonExample":  "{\n  \"subject\":\"\",\n  \"body\":\"\",\n  \"sentTime\":\"\"\n}"
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflowTrigger",
+                      "typeVersion":  1.1,
+                      "position":  [
+                                       0,
+                                       208
+                                   ],
+                      "id":  "552c7261-35ac-483c-85df-2d8572489217",
+                      "name":  "Start",
+                      "executeOnce":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "raw",
+                                         "jsonOutput":  "={\n\"output\": {\n  \"urgency\": \"high\",\n  \"relationship\": \"external\",\n  \"nature\": \"support\",\n  \"timeSensitivity\": \"short\",\n  \"shouldFollowUp\": true,\n  \"recommendedDelayInHours\": 7,\n  \"followupMessage\": \"{{ Math.random() }} - Reply: {{ $json.body }}\",\n  \"reason\": \"{{ $json.subject }}\"\n}\n}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.set",
+                      "typeVersion":  3.4,
+                      "position":  [
+                                       224,
+                                       32
+                                   ],
+                      "id":  "64d8f7a8-4753-47e7-9789-4765f2fee337",
+                      "name":  "Edit Fields"
+                  }
+              ],
+    "connections":  {
+                        "Structured Output Parser":  {
+                                                         "ai_outputParser":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Basic LLM Chain",
+                                                                                         "type":  "ai_outputParser",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                     },
+                        "Google Gemini Chat Model":  {
+                                                         "ai_languageModel":  [
+                                                                                  [
+                                                                                      {
+                                                                                          "node":  "Structured Output Parser",
+                                                                                          "type":  "ai_languageModel",
+                                                                                          "index":  0
+                                                                                      },
+                                                                                      {
+                                                                                          "node":  "Basic LLM Chain",
+                                                                                          "type":  "ai_languageModel",
+                                                                                          "index":  0
+                                                                                      }
+                                                                                  ]
+                                                                              ]
+                                                     },
+                        "Start":  {
+                                      "main":  [
+                                                   [
+                                                       {
+                                                           "node":  "Basic LLM Chain",
+                                                           "type":  "main",
+                                                           "index":  0
+                                                       }
+                                                   ]
+                                               ]
+                                  }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "staticData":  null,
+    "meta":  {
+                 "templateCredsSetupCompleted":  true
+             },
+    "nodeGroups":  [
+
+                   ],
+    "pinData":  {
+                    "Start":  [
+                                  {
+                                      "json":  {
+                                                   "subject":  "Login password reset link.",
+                                                   "body":  "â€‹Good day,\n\nHere is the link to reset your login password.\n\n__URL_0__.\n\nPlease let us know if there are problems or concerns with resetting.",
+                                                   "sentTime":  "2026-05-22T02:50:11Z"
+                                               }
+                                  }
+                              ]
+                },
+    "versionId":  "7042cc5f-bb92-45ef-b69f-7285c8eef343",
+    "activeVersionId":  "7042cc5f-bb92-45ef-b69f-7285c8eef343",
+    "versionCounter":  262,
+    "triggerCount":  0,
+    "sourceWorkflowId":  null,
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-04-21T11:40:32.921Z",
+                     "createdAt":  "2026-04-21T11:40:32.921Z",
+                     "id":  "AdmOOQj7jhgPkkAA",
+                     "name":  "Nudge"
+                 },
+                 {
+                     "updatedAt":  "2026-05-21T03:33:36.033Z",
+                     "createdAt":  "2026-05-21T03:33:36.033Z",
+                     "id":  "FDr9UduSpa2ppJVf",
+                     "name":  "Helper"
+                 }
+             ],
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-06-12T11:54:16.517Z",
+                       "createdAt":  "2026-06-12T11:54:16.517Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "CTJriku4JvV2LFqf",
+                       "projectId":  "rRCGWY99DWwNBygs",
+                       "project":  {
+                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
+                                       "createdAt":  "2026-06-12T11:51:48.599Z",
+                                       "id":  "rRCGWY99DWwNBygs",
+                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "customTelemetryTags":  [
+
+                                                               ],
+                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+                                   }
+                   }
+               ],
+    "versionMetadata":  {
+                            "name":  "Version 7042cc5f",
+                            "description":  ""
+                        }
 }

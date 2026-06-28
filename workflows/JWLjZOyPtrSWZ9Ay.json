@@ -1,888 +1,878 @@
-{
-  "updatedAt": "2026-06-28T06:22:09.013Z",
-  "createdAt": "2026-04-21T08:41:00.656Z",
-  "id": "JWLjZOyPtrSWZ9Ay",
-  "name": "Nudge Main2 Email Followup checker",
-  "description": null,
-  "active": false,
-  "isArchived": false,
-  "nodes": [
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes",
-              "minutesInterval": 1
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        0,
-        64
-      ],
-      "id": "baffab45-a5c1-4ec1-a8f0-6f21de079bbe",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "4e3ac88b-f51b-41bb-a1c5-b9d89e084b4c",
-              "leftValue": "={{ $json.nextFollowUpAt }}",
-              "rightValue": "={{ $now.plus(($('Call \\'Nudge Config\\'').first().json.isActualEnvironment ? 0 : 100), 'days') }}",
-              "operator": {
-                "type": "dateTime",
-                "operation": "beforeOrEquals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        1120,
-        -320
-      ],
-      "id": "0cbef9cf-36fa-4af1-bd35-7c6b64a12eb2",
-      "name": "If need followup based on time"
-    },
-    {
-      "parameters": {
-        "resource": "folderMessage",
-        "folderId": {
-          "__rl": true,
-          "value": "AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5-uwAAAgEMAAAA",
-          "mode": "list",
-          "cachedResultName": "Inbox",
-          "cachedResultUrl": "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5%2FuwAAAgEMAAAA"
-        },
-        "returnAll": true,
-        "output": "raw",
-        "filtersUI": {
-          "values": {
-            "filters": {
-              "receivedAfter": "={{ $('Update to processing').sentTime?.toDateTime().toISO() }}"
-            }
-          }
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [
-        2016,
-        -320
-      ],
-      "id": "46f7039f-8558-433d-86d2-aaff9f7d7953",
-      "name": "Get inbox to check reply",
-      "webhookId": "5f51c449-7ecb-4bf7-89b1-e3d6467a1f23",
-      "alwaysOutputData": true,
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "1c91789b-3191-4e70-b8df-1e4d0f434755",
-              "leftValue": "={{ $json.hasReply }}",
-              "rightValue": "={{ $('Get rows in sheet').item.json.conversationId }}",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        2464,
-        -320
-      ],
-      "id": "70d234e9-f17e-4ac2-a186-6d3ec1a42e9a",
-      "name": "If has reply"
-    },
-    {
-      "parameters": {
-        "resource": "worksheet",
-        "operation": "update",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "dataMode": "autoMap",
-        "columnToMatchOn": "=messageId",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        1568,
-        -320
-      ],
-      "id": "805370ad-d4e2-475b-8d1a-57c3f5e25404",
-      "name": "Update to processing",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "worksheet",
-        "operation": "update",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "dataMode": "autoMap",
-        "columnToMatchOn": "=messageId",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        2912,
-        -320
-      ],
-      "id": "73172eda-9db8-43d2-ab67-ae0d9dd33de4",
-      "name": "Update to replied",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "5a4e881c-dd0c-467a-b57a-2b7625ba9846",
-              "leftValue": "={{ $json.status }}",
-              "rightValue": "pending",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.filter",
-      "typeVersion": 2.3,
-      "position": [
-        672,
-        64
-      ],
-      "id": "448036d7-bfe9-425e-be4f-e5d12aaea7bb",
-      "name": "Filter pending"
-    },
-    {
-      "parameters": {
-        "resource": "table",
-        "operation": "getRows",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "table": {
-          "__rl": true,
-          "value": "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
-          "mode": "list",
-          "cachedResultName": "email"
-        },
-        "filters": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        448,
-        64
-      ],
-      "id": "2128c573-7e19-4c75-8012-76bf7cdad2eb",
-      "name": "Get rows in sheet",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        896,
-        64
-      ],
-      "id": "344f904a-3c20-4580-8574-bbad6f082a78",
-      "name": "Loop Over Items"
-    },
-    {
-      "parameters": {
-        "jsCode": "const inbox = $input.all();\nconst expectedRec = $('Get a message').first().json.toRecipients || [];\nconst convId = $('Update to processing').first().json.conversationId;\nconst sender = $('Update to processing').first().json.sender;\nconst agentEmail = $('Call \\'Nudge Config\\'').first().json.agentEmail;\n\n// Flatten expected recipients into an array of addresses\nconst expectedAddresses = expectedRec.map(r => r.emailAddress?.address).filter(Boolean);\n\nconst reply = inbox.find(m =>\n  m.json.conversationId === convId &&\n  m.json.sender?.emailAddress?.address !== sender &&\n  m.json.sender?.emailAddress?.address !== agentEmail && expectedAddresses.includes(m.json.sender?.emailAddress?.address)\n);\n\nreturn {\n  hasReply: !!reply\n};\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2240,
-        -320
-      ],
-      "id": "ce40b960-3a4b-4db8-ade4-92e4cb51efd2",
-      "name": "Check reply",
-      "executeOnce": true
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "let text = $('Update to processing').item.json.followUpMessage;\n\nconst html = text\n  .replace(/\\/n/g, '<br>')\n  .replace(/\\n/g, '<br>');\n\nreturn {\n  htmlMessage: html\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2688,
-        -128
-      ],
-      "id": "1b8e8cd6-6786-49fb-aa69-3c7db4323b4c",
-      "name": "Clean followup message",
-      "executeOnce": false
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  messageId: $('If need followup based on time').item.json.messageId,\n  status: \"processing\"\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1344,
-        -320
-      ],
-      "id": "7df5422b-0130-41dc-ab1b-95f087b2d697",
-      "name": "Prepare processing"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  messageId: $('Update to processing').item.json.messageId,\n  status: \"replied\"\n}"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2688,
-        -320
-      ],
-      "id": "7b73c45c-6cdb-4169-9f30-645e5045e9ef",
-      "name": "Prepare replied"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "b3OCuHLwF5yV7QDp",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/b3OCuHLwF5yV7QDp",
-          "cachedResultName": "Nudge Config"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "mode": "each",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        224,
-        64
-      ],
-      "id": "7b9c2931-1043-44fb-ba88-4e7e8ddeacad",
-      "name": "Call 'Nudge Config'"
-    },
-    {
-      "parameters": {
-        "resource": "worksheet",
-        "operation": "update",
-        "workbook": {
-          "__rl": true,
-          "value": "={{ $('Call \\'Nudge Config\\'').first().json.excelid }}",
-          "mode": "id"
-        },
-        "worksheet": {
-          "__rl": true,
-          "value": "{00000000-0001-0000-0000-000000000000}",
-          "mode": "list",
-          "cachedResultName": "Emails"
-        },
-        "dataMode": "autoMap",
-        "columnToMatchOn": "=messageId",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftExcel",
-      "typeVersion": 2.2,
-      "position": [
-        4480,
-        0
-      ],
-      "id": "50cc84ba-d350-4b74-9685-8b7fb553e62f",
-      "name": "Update nextfollowupsent",
-      "credentials": {
-        "microsoftExcelOAuth2Api": {
-          "id": "3jmhUJAMJYXz5iHm",
-          "name": "Microsoft Excel account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const openPeriods = $('Call \\'Nudge Config\\'').first().json.openPeriods;\nconst obj = $('Update to processing').item.json;\n\nconst sentDay = new Date();\n\nconst rawDelay = Number(obj.recommendedDelayInHours);\n\nif(!(obj.shouldFollowUp) || $('Get new followUpCount and status').item.json.status == \"followupmax\") {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  }\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay <= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, Math.min(rawDelay, 14));\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour >= 24) {\n    // rollover to next day’s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 < 0 || int0 > 23 || int1 < 0 || int1 > 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i <= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) => a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time <= min) return min;\n    if (time > max) return min + 24; // next day’s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val >= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4032,
-        -128
-      ],
-      "id": "f5208b52-1115-4d70-a16c-d83a794a73e9",
-      "name": "Get New Followup time",
-      "alwaysOutputData": false
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "messageId": {
-          "__rl": true,
-          "value": "={{ $json.messageId }}",
-          "mode": "id"
-        },
-        "output": "raw",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [
-        1792,
-        -320
-      ],
-      "id": "e1ac9f42-b004-4a4f-ae89-37ea6dc20f89",
-      "name": "Get a message",
-      "webhookId": "e325a9b3-dcc0-4fe1-a1b8-bc388fa3f56b",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://graph.microsoft.com/v1.0/me/messages/{{ $('Update to processing').item.json.messageId }}/createReplyAll",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "microsoftOutlookOAuth2Api",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        3136,
-        -128
-      ],
-      "id": "78c9a8a5-4264-427c-9135-12939f1df830",
-      "name": "Prepare Draft",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://graph.microsoft.com/v1.0/me/messages/{{ $json.id }}/send",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "microsoftOutlookOAuth2Api",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        3584,
-        -128
-      ],
-      "id": "0aeff49a-9504-4f62-9cfc-8ac28dcb9341",
-      "name": "Send Reply",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const toList = ($('Get a message').item.json.toRecipients).filter((val) => val.emailAddress.address != $('Call \\'Nudge Config\\'').first().json.agentEmail);\n\nconst ccClean = ($('Get a message').item.json.ccRecipients).filter((val) => val.emailAddress.address != $('Call \\'Nudge Config\\'').first().json.agentEmail);\n\nconst ccList = [$('Get a message').first().json.sender, ...ccClean];\n\nconst bccList = ($('Get a message').item.json.bccRecipients).filter((val) => val.emailAddress.address != $('Call \\'Nudge Config\\'').first().json.agentEmail);\n\nreturn {toList: toList, ccList: ccList, bccList: bccList};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2912,
-        -128
-      ],
-      "id": "99aa9303-01d8-4f4c-b7f3-51f8698c4bb0",
-      "name": "Prepare recipients list"
-    },
-    {
-      "parameters": {
-        "method": "PATCH",
-        "url": "=https://graph.microsoft.com/v1.0/me/messages/{{ $json.id }}/",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "microsoftOutlookOAuth2Api",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n\"toRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.toList) }},\n\"ccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.ccList) }},\n\"bccRecipients\": {{ JSON.stringify($('Prepare recipients list').item.json.bccList) }},\n\"body\": {\n\"contentType\": \"HTML\",\n\"content\": {{ JSON.stringify($('Clean followup message').item.json.htmlMessage) }}}\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        3360,
-        -128
-      ],
-      "id": "3597b3a5-92b8-4705-b04e-cd7db55bb5e0",
-      "name": "Prepare parameters",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "nVUgPjZX7pqA3Sg2",
-          "name": "Microsoft Outlook account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "return {\n  messageId: $('Update to processing').item.json.messageId,\n  sentTime: (new Date()).toISOString(),\n  status: $('Get new followUpCount and status').item.json.status,\n  followUpCount: $('Get new followUpCount and status').item.json.followUpCount,\n  nextFollowUpAt: $('Get New Followup time').item.json.nextFollowUpAt\n}"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4256,
-        -128
-      ],
-      "id": "dff8e715-8c7d-413b-92e3-68b6f8a1a49f",
-      "name": "Prepare pending or followupmax"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const obj = $('Update to processing').item.json;\nconst maximum = $('Call \\'Nudge Config\\'').first().json.maxFollowUpCount;\n\nconst mymaximum = Number(maximum) || 0;\n\nconst newCount = (obj?.followUpCount ?? 0) + 1;\n\nreturn {\n  followUpCount: newCount,\n  status: mymaximum > 0 && newCount >= mymaximum? \"followupmax\": \"pending\"\n}"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3808,
-        -128
-      ],
-      "id": "30423119-77fb-4bea-bd07-4a987ee18115",
-      "name": "Get new followUpCount and status"
-    }
-  ],
-  "connections": {
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Call 'Nudge Config'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If need followup based on time": {
-      "main": [
-        [
-          {
-            "node": "Prepare processing",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get inbox to check reply": {
-      "main": [
-        [
-          {
-            "node": "Check reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If has reply": {
-      "main": [
-        [
-          {
-            "node": "Prepare replied",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Clean followup message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update to processing": {
-      "main": [
-        [
-          {
-            "node": "Get a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update to replied": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter pending": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get rows in sheet": {
-      "main": [
-        [
-          {
-            "node": "Filter pending",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Items": {
-      "main": [
-        [],
-        [
-          {
-            "node": "If need followup based on time",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check reply": {
-      "main": [
-        [
-          {
-            "node": "If has reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Clean followup message": {
-      "main": [
-        [
-          {
-            "node": "Prepare recipients list",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare processing": {
-      "main": [
-        [
-          {
-            "node": "Update to processing",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare replied": {
-      "main": [
-        [
-          {
-            "node": "Update to replied",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'Nudge Config'": {
-      "main": [
-        [
-          {
-            "node": "Get rows in sheet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update nextfollowupsent": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get New Followup time": {
-      "main": [
-        [
-          {
-            "node": "Prepare pending or followupmax",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get a message": {
-      "main": [
-        [
-          {
-            "node": "Get inbox to check reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare Draft": {
-      "main": [
-        [
-          {
-            "node": "Prepare parameters",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send Reply": {
-      "main": [
-        [
-          {
-            "node": "Get new followUpCount and status",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare recipients list": {
-      "main": [
-        [
-          {
-            "node": "Prepare Draft",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare parameters": {
-      "main": [
-        [
-          {
-            "node": "Send Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare pending or followupmax": {
-      "main": [
-        [
-          {
-            "node": "Update nextfollowupsent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get new followUpCount and status": {
-      "main": [
-        [
-          {
-            "node": "Get New Followup time",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
-  },
-  "staticData": {
-    "node:Schedule Trigger": {
-      "recurrenceRules": []
-    }
-  },
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "nodeGroups": [],
-  "pinData": {},
-  "versionId": "ede685d6-6a62-45a8-88a4-11a35e3da36e",
-  "activeVersionId": null,
-  "versionCounter": 846,
-  "triggerCount": 1,
-  "sourceWorkflowId": null,
-  "tags": [
-    {
-      "updatedAt": "2026-04-21T11:40:32.921Z",
-      "createdAt": "2026-04-21T11:40:32.921Z",
-      "id": "AdmOOQj7jhgPkkAA",
-      "name": "Nudge"
-    }
-  ],
-  "shared": [
-    {
-      "updatedAt": "2026-06-12T11:54:16.597Z",
-      "createdAt": "2026-06-12T11:54:16.597Z",
-      "role": "workflow:owner",
-      "workflowId": "JWLjZOyPtrSWZ9Ay",
-      "projectId": "rRCGWY99DWwNBygs",
-      "project": {
-        "updatedAt": "2026-06-12T11:53:00.215Z",
-        "createdAt": "2026-06-12T11:51:48.599Z",
-        "id": "rRCGWY99DWwNBygs",
-        "name": "Virgel Rai Torres <virgelraitorres@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "customTelemetryTags": [],
-        "creatorId": "4f3646da-df4f-45df-a733-c5f2c2d4a195"
-      }
-    }
-  ],
-  "versionMetadata": {
-    "name": null,
-    "description": null
-  }
+﻿{
+    "updatedAt":  "2026-06-28T06:22:09.013Z",
+    "createdAt":  "2026-04-21T08:41:00.656Z",
+    "id":  "JWLjZOyPtrSWZ9Ay",
+    "name":  "Nudge Main2 Email Followup checker",
+    "description":  null,
+    "active":  false,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "rule":  {
+                                                      "interval":  [
+                                                                       {
+                                                                           "field":  "minutes",
+                                                                           "minutesInterval":  1
+                                                                       }
+                                                                   ]
+                                                  }
+                                     },
+                      "type":  "n8n-nodes-base.scheduleTrigger",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       0,
+                                       64
+                                   ],
+                      "id":  "baffab45-a5c1-4ec1-a8f0-6f21de079bbe",
+                      "name":  "Schedule Trigger"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "4e3ac88b-f51b-41bb-a1c5-b9d89e084b4c",
+                                                                                   "leftValue":  "={{ $json.nextFollowUpAt }}",
+                                                                                   "rightValue":  "={{ $now.plus(($(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.isActualEnvironment ? 0 : 100), \u0027days\u0027) }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "dateTime",
+                                                                                                    "operation":  "beforeOrEquals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       1120,
+                                       -320
+                                   ],
+                      "id":  "0cbef9cf-36fa-4af1-bd35-7c6b64a12eb2",
+                      "name":  "If need followup based on time"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "folderMessage",
+                                         "folderId":  {
+                                                          "__rl":  true,
+                                                          "value":  "AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5-uwAAAgEMAAAA",
+                                                          "mode":  "list",
+                                                          "cachedResultName":  "Inbox",
+                                                          "cachedResultUrl":  "https://outlook.office365.com/mail/AQMkADAwATM0MDAAMS0zMTVjLTJjZjktMDACLTAwCgAuAAADMFolCxHdqUKFau4WdE9nJgEAEpFoJHQSgk2W2zgaaj5%2FuwAAAgEMAAAA"
+                                                      },
+                                         "returnAll":  true,
+                                         "output":  "raw",
+                                         "filtersUI":  {
+                                                           "values":  {
+                                                                          "filters":  {
+                                                                                          "receivedAfter":  "={{ $(\u0027Update to processing\u0027).sentTime?.toDateTime().toISO() }}"
+                                                                                      }
+                                                                      }
+                                                       },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftOutlook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2016,
+                                       -320
+                                   ],
+                      "id":  "46f7039f-8558-433d-86d2-aaff9f7d7953",
+                      "name":  "Get inbox to check reply",
+                      "webhookId":  "5f51c449-7ecb-4bf7-89b1-e3d6467a1f23",
+                      "alwaysOutputData":  true,
+                      "onError":  "continueErrorOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "1c91789b-3191-4e70-b8df-1e4d0f434755",
+                                                                                   "leftValue":  "={{ $json.hasReply }}",
+                                                                                   "rightValue":  "={{ $(\u0027Get rows in sheet\u0027).item.json.conversationId }}",
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "true",
+                                                                                                    "singleValue":  true
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       2464,
+                                       -320
+                                   ],
+                      "id":  "70d234e9-f17e-4ac2-a186-6d3ec1a42e9a",
+                      "name":  "If has reply"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "worksheet",
+                                         "operation":  "update",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "dataMode":  "autoMap",
+                                         "columnToMatchOn":  "=messageId",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       1568,
+                                       -320
+                                   ],
+                      "id":  "805370ad-d4e2-475b-8d1a-57c3f5e25404",
+                      "name":  "Update to processing"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "worksheet",
+                                         "operation":  "update",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "dataMode":  "autoMap",
+                                         "columnToMatchOn":  "=messageId",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       2912,
+                                       -320
+                                   ],
+                      "id":  "73172eda-9db8-43d2-ab67-ae0d9dd33de4",
+                      "name":  "Update to replied"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "caseSensitive":  true,
+                                                                            "leftValue":  "",
+                                                                            "typeValidation":  "strict",
+                                                                            "version":  3
+                                                                        },
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "5a4e881c-dd0c-467a-b57a-2b7625ba9846",
+                                                                                   "leftValue":  "={{ $json.status }}",
+                                                                                   "rightValue":  "pending",
+                                                                                   "operator":  {
+                                                                                                    "type":  "string",
+                                                                                                    "operation":  "equals"
+                                                                                                }
+                                                                               }
+                                                                           ],
+                                                            "combinator":  "and"
+                                                        },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.filter",
+                      "typeVersion":  2.3,
+                      "position":  [
+                                       672,
+                                       64
+                                   ],
+                      "id":  "448036d7-bfe9-425e-be4f-e5d12aaea7bb",
+                      "name":  "Filter pending"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "table",
+                                         "operation":  "getRows",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "table":  {
+                                                       "__rl":  true,
+                                                       "value":  "{2F05FF99-E67A-4FC0-A0B4-72DAFAACC3C0}",
+                                                       "mode":  "list",
+                                                       "cachedResultName":  "email"
+                                                   },
+                                         "filters":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       448,
+                                       64
+                                   ],
+                      "id":  "2128c573-7e19-4c75-8012-76bf7cdad2eb",
+                      "name":  "Get rows in sheet"
+                  },
+                  {
+                      "parameters":  {
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.splitInBatches",
+                      "typeVersion":  3,
+                      "position":  [
+                                       896,
+                                       64
+                                   ],
+                      "id":  "344f904a-3c20-4580-8574-bbad6f082a78",
+                      "name":  "Loop Over Items"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const inbox = $input.all();\nconst expectedRec = $(\u0027Get a message\u0027).first().json.toRecipients || [];\nconst convId = $(\u0027Update to processing\u0027).first().json.conversationId;\nconst sender = $(\u0027Update to processing\u0027).first().json.sender;\nconst agentEmail = $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.agentEmail;\n\n// Flatten expected recipients into an array of addresses\nconst expectedAddresses = expectedRec.map(r =\u003e r.emailAddress?.address).filter(Boolean);\n\nconst reply = inbox.find(m =\u003e\n  m.json.conversationId === convId \u0026\u0026\n  m.json.sender?.emailAddress?.address !== sender \u0026\u0026\n  m.json.sender?.emailAddress?.address !== agentEmail \u0026\u0026 expectedAddresses.includes(m.json.sender?.emailAddress?.address)\n);\n\nreturn {\n  hasReply: !!reply\n};\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2240,
+                                       -320
+                                   ],
+                      "id":  "ce40b960-3a4b-4db8-ade4-92e4cb51efd2",
+                      "name":  "Check reply",
+                      "executeOnce":  true
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "let text = $(\u0027Update to processing\u0027).item.json.followUpMessage;\n\nconst html = text\n  .replace(/\\/n/g, \u0027\u003cbr\u003e\u0027)\n  .replace(/\\n/g, \u0027\u003cbr\u003e\u0027);\n\nreturn {\n  htmlMessage: html\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2688,
+                                       -128
+                                   ],
+                      "id":  "1b8e8cd6-6786-49fb-aa69-3c7db4323b4c",
+                      "name":  "Clean followup message",
+                      "executeOnce":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "return {\n  messageId: $(\u0027If need followup based on time\u0027).item.json.messageId,\n  status: \"processing\"\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1344,
+                                       -320
+                                   ],
+                      "id":  "7df5422b-0130-41dc-ab1b-95f087b2d697",
+                      "name":  "Prepare processing"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "return {\n  messageId: $(\u0027Update to processing\u0027).item.json.messageId,\n  status: \"replied\"\n}"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2688,
+                                       -320
+                                   ],
+                      "id":  "7b73c45c-6cdb-4169-9f30-645e5045e9ef",
+                      "name":  "Prepare replied"
+                  },
+                  {
+                      "parameters":  {
+                                         "workflowId":  {
+                                                            "__rl":  true,
+                                                            "value":  "b3OCuHLwF5yV7QDp",
+                                                            "mode":  "list",
+                                                            "cachedResultUrl":  "/workflow/b3OCuHLwF5yV7QDp",
+                                                            "cachedResultName":  "Nudge Config"
+                                                        },
+                                         "workflowInputs":  {
+                                                                "mappingMode":  "defineBelow",
+                                                                "value":  {
+
+                                                                          },
+                                                                "matchingColumns":  [
+
+                                                                                    ],
+                                                                "schema":  [
+
+                                                                           ],
+                                                                "attemptToConvertTypes":  false,
+                                                                "convertFieldsToString":  true
+                                                            },
+                                         "mode":  "each",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.executeWorkflow",
+                      "typeVersion":  1.3,
+                      "position":  [
+                                       224,
+                                       64
+                                   ],
+                      "id":  "7b9c2931-1043-44fb-ba88-4e7e8ddeacad",
+                      "name":  "Call \u0027Nudge Config\u0027"
+                  },
+                  {
+                      "parameters":  {
+                                         "resource":  "worksheet",
+                                         "operation":  "update",
+                                         "workbook":  {
+                                                          "__rl":  true,
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.excelid }}",
+                                                          "mode":  "id"
+                                                      },
+                                         "worksheet":  {
+                                                           "__rl":  true,
+                                                           "value":  "{00000000-0001-0000-0000-000000000000}",
+                                                           "mode":  "list",
+                                                           "cachedResultName":  "Emails"
+                                                       },
+                                         "dataMode":  "autoMap",
+                                         "columnToMatchOn":  "=messageId",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftExcel",
+                      "typeVersion":  2.2,
+                      "position":  [
+                                       4480,
+                                       0
+                                   ],
+                      "id":  "50cc84ba-d350-4b74-9685-8b7fb553e62f",
+                      "name":  "Update nextfollowupsent"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const openPeriods = $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.openPeriods;\nconst obj = $(\u0027Update to processing\u0027).item.json;\n\nconst sentDay = new Date();\n\nconst rawDelay = Number(obj.recommendedDelayInHours);\n\nif(!(obj.shouldFollowUp) || $(\u0027Get new followUpCount and status\u0027).item.json.status == \"followupmax\") {\n  return {\n    nextFollowUpAt: \"\",\n    finalDelayUsed: 0,\n    usedFallback: false\n  }\n}\n\n// Calculate delay\nlet delay;\nif (isNaN(rawDelay) || rawDelay \u003c= 0) {\n  delay = getFallbackDelay($json.output);\n} else {\n  delay = Math.max(1, Math.min(rawDelay, 14));\n}\n\n// Compute initial follow-up time\nlet followUp = new Date(sentDay);\nfollowUp.setTime(sentDay.getTime() + delay * 60 * 60 * 1000);\n\n// --- NEW LOGIC: constrain to valid open periods (UTC-based) ---\nconst validSet = generateValidIntervalSet(openPeriods);\nconst followUpHour = followUp.getUTCHours();\nconst adjustedHour = getValidTime(validSet, followUpHour);\n\n// Preserve minutes/seconds/milliseconds\nconst minutes = followUp.getUTCMinutes();\nconst seconds = followUp.getUTCSeconds();\nconst ms = followUp.getUTCMilliseconds();\n\nif (adjustedHour !== followUpHour) {\n  if (adjustedHour \u003e= 24) {\n    // rollover to next dayâ€™s min\n    followUp.setUTCDate(followUp.getUTCDate() + 1);\n    followUp.setUTCHours(adjustedHour - 24, minutes, seconds, ms);\n  } else {\n    followUp.setUTCHours(adjustedHour, minutes, seconds, ms);\n  }\n}\n\n// Final output\nreturn {\n  nextFollowUpAt: followUp.toISOString(),\n  finalDelayUsed: delay,\n  usedFallback: delay !== rawDelay\n};\n\n// --- Helper functions ---\nfunction getFallbackDelay(output) {\n  if (output.urgency === \"high\") return 1;\n  if (output.urgency === \"medium\") return 2;\n  if (output.urgency === \"low\") return 4;\n  return 3;\n}\n\nfunction generateValidIntervalSet(myvalidinterval) {\n  const validintervalset = new Set();\n\n  if (!Array.isArray(myvalidinterval)) return validintervalset;\n\n  for (const interval of myvalidinterval) {\n    if (!Array.isArray(interval) || interval.length !== 2) continue;\n\n    const int0 = Number(interval[0]);\n    const int1 = Number(interval[1]);\n\n    if (Number.isNaN(int0) || Number.isNaN(int1)) continue;\n    if (int0 \u003c 0 || int0 \u003e 23 || int1 \u003c 0 || int1 \u003e 23) continue;\n\n    const mini = Math.min(int0, int1);\n    const maxi = Math.max(int0, int1);\n\n    for (let i = mini; i \u003c= maxi; i++) {\n      validintervalset.add(i);\n    }\n  }\n\n  return validintervalset;\n}\n\nfunction getValidTime(myvalidintervalset, time) {\n  try {\n    myvalidintervalset = new Set(myvalidintervalset);\n\n    if (myvalidintervalset.size === 0) return time;\n\n    const arr = Array.from(myvalidintervalset).sort((a, b) =\u003e a - b);\n\n    const min = arr[0];\n    const max = arr[arr.length - 1];\n\n    if (time \u003c= min) return min;\n    if (time \u003e max) return min + 24; // next dayâ€™s min\n\n    if (myvalidintervalset.has(time)) return time;\n\n    for (let val of arr) {\n      if (val \u003e= time) return val;\n    }\n\n    return time;\n  } catch (e) {\n    return time;\n  }\n}\n"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4032,
+                                       -128
+                                   ],
+                      "id":  "f5208b52-1115-4d70-a16c-d83a794a73e9",
+                      "name":  "Get New Followup time",
+                      "alwaysOutputData":  false
+                  },
+                  {
+                      "parameters":  {
+                                         "operation":  "get",
+                                         "messageId":  {
+                                                           "__rl":  true,
+                                                           "value":  "={{ $json.messageId }}",
+                                                           "mode":  "id"
+                                                       },
+                                         "output":  "raw",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.microsoftOutlook",
+                      "typeVersion":  2,
+                      "position":  [
+                                       1792,
+                                       -320
+                                   ],
+                      "id":  "e1ac9f42-b004-4a4f-ae89-37ea6dc20f89",
+                      "name":  "Get a message",
+                      "webhookId":  "e325a9b3-dcc0-4fe1-a1b8-bc388fa3f56b",
+                      "onError":  "continueErrorOutput"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "=https://graph.microsoft.com/v1.0/me/messages/{{ $(\u0027Update to processing\u0027).item.json.messageId }}/createReplyAll",
+                                         "authentication":  "predefinedCredentialType",
+                                         "nodeCredentialType":  "microsoftOutlookOAuth2Api",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.4,
+                      "position":  [
+                                       3136,
+                                       -128
+                                   ],
+                      "id":  "78c9a8a5-4264-427c-9135-12939f1df830",
+                      "name":  "Prepare Draft"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "=https://graph.microsoft.com/v1.0/me/messages/{{ $json.id }}/send",
+                                         "authentication":  "predefinedCredentialType",
+                                         "nodeCredentialType":  "microsoftOutlookOAuth2Api",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.4,
+                      "position":  [
+                                       3584,
+                                       -128
+                                   ],
+                      "id":  "0aeff49a-9504-4f62-9cfc-8ac28dcb9341",
+                      "name":  "Send Reply"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const toList = ($(\u0027Get a message\u0027).item.json.toRecipients).filter((val) =\u003e val.emailAddress.address != $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.agentEmail);\n\nconst ccClean = ($(\u0027Get a message\u0027).item.json.ccRecipients).filter((val) =\u003e val.emailAddress.address != $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.agentEmail);\n\nconst ccList = [$(\u0027Get a message\u0027).first().json.sender, ...ccClean];\n\nconst bccList = ($(\u0027Get a message\u0027).item.json.bccRecipients).filter((val) =\u003e val.emailAddress.address != $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.agentEmail);\n\nreturn {toList: toList, ccList: ccList, bccList: bccList};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       2912,
+                                       -128
+                                   ],
+                      "id":  "99aa9303-01d8-4f4c-b7f3-51f8698c4bb0",
+                      "name":  "Prepare recipients list"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "PATCH",
+                                         "url":  "=https://graph.microsoft.com/v1.0/me/messages/{{ $json.id }}/",
+                                         "authentication":  "predefinedCredentialType",
+                                         "nodeCredentialType":  "microsoftOutlookOAuth2Api",
+                                         "sendBody":  true,
+                                         "specifyBody":  "json",
+                                         "jsonBody":  "={\n\"toRecipients\": {{ JSON.stringify($(\u0027Prepare recipients list\u0027).item.json.toList) }},\n\"ccRecipients\": {{ JSON.stringify($(\u0027Prepare recipients list\u0027).item.json.ccList) }},\n\"bccRecipients\": {{ JSON.stringify($(\u0027Prepare recipients list\u0027).item.json.bccList) }},\n\"body\": {\n\"contentType\": \"HTML\",\n\"content\": {{ JSON.stringify($(\u0027Clean followup message\u0027).item.json.htmlMessage) }}}\n}",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  4.4,
+                      "position":  [
+                                       3360,
+                                       -128
+                                   ],
+                      "id":  "3597b3a5-92b8-4705-b04e-cd7db55bb5e0",
+                      "name":  "Prepare parameters"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "return {\n  messageId: $(\u0027Update to processing\u0027).item.json.messageId,\n  sentTime: (new Date()).toISOString(),\n  status: $(\u0027Get new followUpCount and status\u0027).item.json.status,\n  followUpCount: $(\u0027Get new followUpCount and status\u0027).item.json.followUpCount,\n  nextFollowUpAt: $(\u0027Get New Followup time\u0027).item.json.nextFollowUpAt\n}"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4256,
+                                       -128
+                                   ],
+                      "id":  "dff8e715-8c7d-413b-92e3-68b6f8a1a49f",
+                      "name":  "Prepare pending or followupmax"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const obj = $(\u0027Update to processing\u0027).item.json;\nconst maximum = $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.maxFollowUpCount;\n\nconst mymaximum = Number(maximum) || 0;\n\nconst newCount = (obj?.followUpCount ?? 0) + 1;\n\nreturn {\n  followUpCount: newCount,\n  status: mymaximum \u003e 0 \u0026\u0026 newCount \u003e= mymaximum? \"followupmax\": \"pending\"\n}"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3808,
+                                       -128
+                                   ],
+                      "id":  "30423119-77fb-4bea-bd07-4a987ee18115",
+                      "name":  "Get new followUpCount and status"
+                  }
+              ],
+    "connections":  {
+                        "Schedule Trigger":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Call \u0027Nudge Config\u0027",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "If need followup based on time":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "Prepare processing",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ],
+                                                                            [
+                                                                                {
+                                                                                    "node":  "Loop Over Items",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "Get inbox to check reply":  {
+                                                         "main":  [
+                                                                      [
+                                                                          {
+                                                                              "node":  "Check reply",
+                                                                              "type":  "main",
+                                                                              "index":  0
+                                                                          }
+                                                                      ]
+                                                                  ]
+                                                     },
+                        "If has reply":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Prepare replied",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ],
+                                                          [
+                                                              {
+                                                                  "node":  "Clean followup message",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "Update to processing":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Get a message",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Update to replied":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Loop Over Items",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Filter pending":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Loop Over Items",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Get rows in sheet":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Filter pending",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              },
+                        "Loop Over Items":  {
+                                                "main":  [
+                                                             [
+
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "If need followup based on time",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Check reply":  {
+                                            "main":  [
+                                                         [
+                                                             {
+                                                                 "node":  "If has reply",
+                                                                 "type":  "main",
+                                                                 "index":  0
+                                                             }
+                                                         ]
+                                                     ]
+                                        },
+                        "Clean followup message":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Prepare recipients list",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Prepare processing":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Update to processing",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Prepare replied":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Update to replied",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Call \u0027Nudge Config\u0027":  {
+                                                              "main":  [
+                                                                           [
+                                                                               {
+                                                                                   "node":  "Get rows in sheet",
+                                                                                   "type":  "main",
+                                                                                   "index":  0
+                                                                               }
+                                                                           ]
+                                                                       ]
+                                                          },
+                        "Update nextfollowupsent":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Loop Over Items",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Get New Followup time":  {
+                                                      "main":  [
+                                                                   [
+                                                                       {
+                                                                           "node":  "Prepare pending or followupmax",
+                                                                           "type":  "main",
+                                                                           "index":  0
+                                                                       }
+                                                                   ]
+                                                               ]
+                                                  },
+                        "Get a message":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Get inbox to check reply",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Prepare Draft":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Prepare parameters",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Send Reply":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Get new followUpCount and status",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Prepare recipients list":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Prepare Draft",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Prepare parameters":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Send Reply",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Prepare pending or followupmax":  {
+                                                               "main":  [
+                                                                            [
+                                                                                {
+                                                                                    "node":  "Update nextfollowupsent",
+                                                                                    "type":  "main",
+                                                                                    "index":  0
+                                                                                }
+                                                                            ]
+                                                                        ]
+                                                           },
+                        "Get new followUpCount and status":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Get New Followup time",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             }
+                    },
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate",
+                     "availableInMCP":  false
+                 },
+    "staticData":  {
+                       "node:Schedule Trigger":  {
+                                                     "recurrenceRules":  [
+
+                                                                         ]
+                                                 }
+                   },
+    "meta":  {
+                 "templateCredsSetupCompleted":  true
+             },
+    "nodeGroups":  [
+
+                   ],
+    "pinData":  {
+
+                },
+    "versionId":  "ede685d6-6a62-45a8-88a4-11a35e3da36e",
+    "activeVersionId":  null,
+    "versionCounter":  846,
+    "triggerCount":  1,
+    "sourceWorkflowId":  null,
+    "tags":  [
+                 {
+                     "updatedAt":  "2026-04-21T11:40:32.921Z",
+                     "createdAt":  "2026-04-21T11:40:32.921Z",
+                     "id":  "AdmOOQj7jhgPkkAA",
+                     "name":  "Nudge"
+                 }
+             ],
+    "shared":  [
+                   {
+                       "updatedAt":  "2026-06-12T11:54:16.597Z",
+                       "createdAt":  "2026-06-12T11:54:16.597Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "JWLjZOyPtrSWZ9Ay",
+                       "projectId":  "rRCGWY99DWwNBygs",
+                       "project":  {
+                                       "updatedAt":  "2026-06-12T11:53:00.215Z",
+                                       "createdAt":  "2026-06-12T11:51:48.599Z",
+                                       "id":  "rRCGWY99DWwNBygs",
+                                       "name":  "Virgel Rai Torres \u003cvirgelraitorres@gmail.com\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "customTelemetryTags":  [
+
+                                                               ],
+                                       "creatorId":  "4f3646da-df4f-45df-a733-c5f2c2d4a195"
+                                   }
+                   }
+               ],
+    "versionMetadata":  {
+                            "name":  null,
+                            "description":  null
+                        }
 }
