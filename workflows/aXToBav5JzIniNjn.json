@@ -1,5 +1,5 @@
 ﻿{
-    "updatedAt":  "2026-06-28T06:16:23.855Z",
+    "updatedAt":  "2026-06-28T15:31:37.679Z",
     "createdAt":  "2026-04-21T11:00:57.474Z",
     "id":  "aXToBav5JzIniNjn",
     "name":  "Nudge Main1 Check unprompted",
@@ -33,7 +33,7 @@
                                          "operation":  "getRows",
                                          "workbook":  {
                                                           "__rl":  true,
-                                                          "value":  "={{ $json.excelid }}",
+                                                          "value":  "={{ $(\u0027Call \\\u0027Nudge Config\\\u0027\u0027).first().json.excelid }}",
                                                           "mode":  "id"
                                                       },
                                          "worksheet":  {
@@ -346,9 +346,9 @@
     "pinData":  {
 
                 },
-    "versionId":  "88daa53c-ab77-4205-8f87-c6e2a5865d61",
+    "versionId":  "d679b448-24e0-4646-82db-0d1e05101242",
     "activeVersionId":  null,
-    "versionCounter":  87,
+    "versionCounter":  91,
     "triggerCount":  1,
     "sourceWorkflowId":  null,
     "tags":  [
