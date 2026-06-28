@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-28T06:26:13.770Z",
-    "createdAt":  "2026-04-21T10:58:59.786Z",
     "id":  "6lw2gHUZtHefh763",
     "name":  "Nudge Record data",
     "description":  null,
-    "active":  true,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -1088,19 +1084,6 @@
                      "availableInMCP":  false,
                      "binaryMode":  "separate"
                  },
-    "staticData":  null,
-    "meta":  null,
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "b5115433-e643-4252-80ad-7633722ac9e0",
-    "activeVersionId":  "12503eea-5052-4f71-9dd2-908428e96401",
-    "versionCounter":  683,
-    "triggerCount":  0,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -1114,9 +1097,5 @@
                      "id":  "FDr9UduSpa2ppJVf",
                      "name":  "Helper"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  null,
-                            "description":  null
-                        }
+             ]
 }

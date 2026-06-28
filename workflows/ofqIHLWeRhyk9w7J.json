@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-12T14:15:00.000Z",
-    "createdAt":  "2026-05-21T02:48:50.969Z",
     "id":  "ofqIHLWeRhyk9w7J",
     "name":  "Nudge Add to or Update Email table",
     "description":  null,
-    "active":  false,
-    "isArchived":  true,
     "nodes":  [
                   {
                       "parameters":  {
@@ -315,46 +311,6 @@
                      "executionOrder":  "v1",
                      "binaryMode":  "separate"
                  },
-    "staticData":  null,
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-                    "Start":  [
-                                  {
-                                      "json":  {
-                                                   "isUpdate":  true,
-                                                   "messageId":  "123",
-                                                   "conversationId":  "",
-                                                   "subject":  "ok",
-                                                   "recipient":  "",
-                                                   "sender":  "",
-                                                   "sentTime":  "",
-                                                   "status":  "",
-                                                   "shouldFollowUp":  "",
-                                                   "nextFollowUpAt":  "",
-                                                   "followUpMessage":  "",
-                                                   "repliedTime":  "",
-                                                   "followUpCount":  "",
-                                                   "requiresApproval":  "",
-                                                   "urgency":  "",
-                                                   "relationship":  "",
-                                                   "nature":  "",
-                                                   "timesensitivity":  "",
-                                                   "recommendedDelayInDays":  0,
-                                                   "reason":  ""
-                                               }
-                                  }
-                              ]
-                },
-    "versionId":  "0955eed3-a4fe-459e-9c20-abc441198abe",
-    "activeVersionId":  null,
-    "versionCounter":  481,
-    "triggerCount":  0,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -368,9 +324,5 @@
                      "id":  "SIdAtN2PRl4SFKyj",
                      "name":  "Excel"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  null,
-                            "description":  null
-                        }
+             ]
 }

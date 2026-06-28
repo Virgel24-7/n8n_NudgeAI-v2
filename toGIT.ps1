@@ -28,26 +28,28 @@ foreach ($file in $workflowFiles) {
     $content = $content.TrimStart([char]0xFEFF) # remove BOM if present
     $json = $content | ConvertFrom-Json
 
-    # Strip credentials from nodes
-    if ($json.nodes) {
-        foreach ($node in $json.nodes) {
-            if ($node.PSObject.Properties.Name -contains "credentials") {
-                $node.PSObject.Properties.Remove("credentials")
-            }
-        }
+    # Build a clean object with only safe fields
+    $clean = [PSCustomObject]@{
+        id          = $json.id
+        name        = $json.name
+        description = $json.description
+        nodes       = $json.nodes
+        connections = $json.connections
+        settings    = $json.settings
+        tags        = $json.tags
     }
 
-    # Strip workflow owner metadata
-    foreach ($field in @("createdBy","updatedBy","sharedWith","shared")) {
-        if ($json.PSObject.Properties.Name -contains $field) {
-            $json.PSObject.Properties.Remove($field)
+    # Strip credentials from nodes
+    foreach ($node in $clean.nodes) {
+        if ($node.PSObject.Properties.Name -contains "credentials") {
+            $node.PSObject.Properties.Remove("credentials")
         }
     }
 
     # Save back without BOM
-    $json | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
+    $clean | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
 }
-Write-Host "Credentials and owner metadata stripped from all workflow JSON files."
+Write-Host "Workflows cleaned: only essential fields retained."
 
 # Commit and push
 Set-Location $exportPath

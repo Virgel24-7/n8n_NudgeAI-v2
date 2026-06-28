@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-28T02:05:36.000Z",
-    "createdAt":  "2026-04-21T07:56:29.433Z",
     "id":  "xfsV9xyR68q3ZHJb",
     "name":  "Nudge 1 Check email",
     "description":  null,
-    "active":  false,
-    "isArchived":  true,
     "nodes":  [
                   {
                       "parameters":  {
@@ -612,27 +608,6 @@
                      "binaryMode":  "separate",
                      "availableInMCP":  false
                  },
-    "staticData":  {
-                       "node:Schedule Trigger":  {
-                                                     "recurrenceRules":  [
-
-                                                                         ]
-                                                 }
-                   },
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "58c20004-8744-40ec-b934-fe77d8297812",
-    "activeVersionId":  null,
-    "versionCounter":  562,
-    "triggerCount":  1,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -640,9 +615,5 @@
                      "id":  "AdmOOQj7jhgPkkAA",
                      "name":  "Nudge"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  null,
-                            "description":  null
-                        }
+             ]
 }

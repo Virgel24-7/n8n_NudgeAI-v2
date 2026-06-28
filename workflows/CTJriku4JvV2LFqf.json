@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-28T03:31:53.550Z",
-    "createdAt":  "2026-04-15T05:45:49.124Z",
     "id":  "CTJriku4JvV2LFqf",
     "name":  "Nudge Decision prompt",
     "description":  null,
-    "active":  true,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -136,29 +132,6 @@
                      "executionOrder":  "v1",
                      "binaryMode":  "separate"
                  },
-    "staticData":  null,
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-                    "Start":  [
-                                  {
-                                      "json":  {
-                                                   "subject":  "Login password reset link.",
-                                                   "body":  "â€‹Good day,\n\nHere is the link to reset your login password.\n\n__URL_0__.\n\nPlease let us know if there are problems or concerns with resetting.",
-                                                   "sentTime":  "2026-05-22T02:50:11Z"
-                                               }
-                                  }
-                              ]
-                },
-    "versionId":  "7042cc5f-bb92-45ef-b69f-7285c8eef343",
-    "activeVersionId":  "7042cc5f-bb92-45ef-b69f-7285c8eef343",
-    "versionCounter":  262,
-    "triggerCount":  0,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -172,9 +145,5 @@
                      "id":  "FDr9UduSpa2ppJVf",
                      "name":  "Helper"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  "Version 7042cc5f",
-                            "description":  ""
-                        }
+             ]
 }

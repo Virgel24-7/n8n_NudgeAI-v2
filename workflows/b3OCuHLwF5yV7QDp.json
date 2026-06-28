@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-25T09:54:12.906Z",
-    "createdAt":  "2026-05-21T03:30:48.135Z",
     "id":  "b3OCuHLwF5yV7QDp",
     "name":  "Nudge Config",
     "description":  null,
-    "active":  true,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -108,19 +104,6 @@
                      "executionOrder":  "v1",
                      "binaryMode":  "separate"
                  },
-    "staticData":  null,
-    "meta":  null,
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "a6f4ae48-a545-4460-af85-e3c003fab080",
-    "activeVersionId":  "a6f4ae48-a545-4460-af85-e3c003fab080",
-    "versionCounter":  153,
-    "triggerCount":  0,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -134,9 +117,5 @@
                      "id":  "SIdAtN2PRl4SFKyj",
                      "name":  "Excel"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  "Version a6f4ae48",
-                            "description":  ""
-                        }
+             ]
 }

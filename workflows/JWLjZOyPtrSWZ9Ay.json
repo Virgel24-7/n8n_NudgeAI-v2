@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-28T06:22:09.013Z",
-    "createdAt":  "2026-04-21T08:41:00.656Z",
     "id":  "JWLjZOyPtrSWZ9Ay",
     "name":  "Nudge Main2 Email Followup checker",
     "description":  null,
-    "active":  false,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -820,27 +816,6 @@
                      "binaryMode":  "separate",
                      "availableInMCP":  false
                  },
-    "staticData":  {
-                       "node:Schedule Trigger":  {
-                                                     "recurrenceRules":  [
-
-                                                                         ]
-                                                 }
-                   },
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "ede685d6-6a62-45a8-88a4-11a35e3da36e",
-    "activeVersionId":  null,
-    "versionCounter":  846,
-    "triggerCount":  1,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -848,9 +823,5 @@
                      "id":  "AdmOOQj7jhgPkkAA",
                      "name":  "Nudge"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  null,
-                            "description":  null
-                        }
+             ]
 }

@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-06-28T15:31:37.679Z",
-    "createdAt":  "2026-04-21T11:00:57.474Z",
     "id":  "aXToBav5JzIniNjn",
     "name":  "Nudge Main1 Check unprompted",
     "description":  null,
-    "active":  false,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -330,27 +326,6 @@
                      "executionOrder":  "v1",
                      "binaryMode":  "separate"
                  },
-    "staticData":  {
-                       "node:Schedule Trigger":  {
-                                                     "recurrenceRules":  [
-                                                                             12
-                                                                         ]
-                                                 }
-                   },
-    "meta":  {
-                 "templateCredsSetupCompleted":  true
-             },
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "d679b448-24e0-4646-82db-0d1e05101242",
-    "activeVersionId":  null,
-    "versionCounter":  91,
-    "triggerCount":  1,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -358,9 +333,5 @@
                      "id":  "AdmOOQj7jhgPkkAA",
                      "name":  "Nudge"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  null,
-                            "description":  null
-                        }
+             ]
 }

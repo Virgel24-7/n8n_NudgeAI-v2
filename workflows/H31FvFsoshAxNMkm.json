@@ -1,11 +1,7 @@
 ﻿{
-    "updatedAt":  "2026-05-22T03:06:50.366Z",
-    "createdAt":  "2026-04-09T07:49:45.816Z",
     "id":  "H31FvFsoshAxNMkm",
     "name":  "Nudge Redactor",
     "description":  null,
-    "active":  true,
-    "isArchived":  false,
     "nodes":  [
                   {
                       "parameters":  {
@@ -61,19 +57,6 @@
                      "timeSavedMode":  "fixed",
                      "callerPolicy":  "workflowsFromSameOwner"
                  },
-    "staticData":  null,
-    "meta":  null,
-    "nodeGroups":  [
-
-                   ],
-    "pinData":  {
-
-                },
-    "versionId":  "994ce122-905f-49ec-818c-2831c0419301",
-    "activeVersionId":  "994ce122-905f-49ec-818c-2831c0419301",
-    "versionCounter":  61,
-    "triggerCount":  0,
-    "sourceWorkflowId":  null,
     "tags":  [
                  {
                      "updatedAt":  "2026-04-21T11:40:32.921Z",
@@ -87,9 +70,5 @@
                      "id":  "FDr9UduSpa2ppJVf",
                      "name":  "Helper"
                  }
-             ],
-    "versionMetadata":  {
-                            "name":  "Version 6eba927b",
-                            "description":  ""
-                        }
+             ]
 }
