@@ -21,11 +21,14 @@ Remove-Item -Path "$repoPath\*" -Recurse -Force
 # Copy out of container to local workflows folder
 docker cp "${containerName}:/home/node/.n8n/backups/workflows/." $repoPath
 
-# Clean credentials from exported workflows
+# Clean credentials and metadata from exported workflows
 $workflowFiles = Get-ChildItem -Path $repoPath -Filter *.json
 foreach ($file in $workflowFiles) {
+    # Read raw content and strip BOM if present
     $content = Get-Content $file.FullName -Raw
-    $content = $content.TrimStart([char]0xFEFF) # remove BOM if present
+    $content = $content.TrimStart([char]0xFEFF)
+
+    # Parse JSON
     $json = $content | ConvertFrom-Json
 
     # Build a clean object with only safe fields
@@ -46,10 +49,10 @@ foreach ($file in $workflowFiles) {
         }
     }
 
-    # Save back without BOM
+    # Save back without BOM (lowercase utf8 ensures no BOM)
     $clean | ConvertTo-Json -Depth 100 | Out-File $file.FullName -Encoding utf8
 }
-Write-Host "Workflows cleaned: only essential fields retained."
+Write-Host "Workflows cleaned and saved."
 
 # Commit and push
 Set-Location $exportPath
